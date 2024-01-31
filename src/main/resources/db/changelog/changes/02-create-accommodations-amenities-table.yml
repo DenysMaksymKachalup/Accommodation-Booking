@@ -1,0 +1,20 @@
+databaseChangeLog:
+  - changeSet:
+      id: accommodations-amenities-table
+      author: Denys Kachalup
+      changes:
+        - createTable:
+            tableName: accommodations_amenities
+            columns:
+              - column:
+                  name: accommodation_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_accommodations_amenities_accommodation_id
+                    references: accommodations(id)
+              - column:
+                  name: amenities
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
