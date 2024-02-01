@@ -29,7 +29,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain) throws ServletException, IOException {
         String token = getToken(request);
 
-        if (jwtUtil.isValid(token) && token != null) {
+        if (token != null && jwtUtil.isValid(token)) {
             String email = jwtUtil.getEmail(token);
             UserDetails userDetails = userDetailsService.loadUserByUsername(email);
             Authentication authentication =
