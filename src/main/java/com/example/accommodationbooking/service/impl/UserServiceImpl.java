@@ -10,6 +10,7 @@ import com.example.accommodationbooking.repository.UserRepository;
 import com.example.accommodationbooking.service.UserService;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,6 +19,7 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public UserResponseDto registration(UserRegistrationDto userRequestDto) {
@@ -27,6 +29,7 @@ public class UserServiceImpl implements UserService {
         }
         User user = userMapper.toModel(userRequestDto);
         user.setRoles(Set.of(roleRepository.findByName(RoleName.ROLE_USER)));
+        user.setPassword(passwordEncoder.encode(userRequestDto.password()));
 
         return userMapper.toDto(userRepository.save(user));
     }
