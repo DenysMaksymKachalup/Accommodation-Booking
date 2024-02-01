@@ -8,7 +8,6 @@ public record BookingRequestDto(
         @NotNull LocalDate checkInDate,
         @NotNull LocalDate checkOutDate,
         @NotNull @Positive Long accommodationId,
-        @NotNull @Positive Long userId,
         @NotNull String bookingStatus
 ) {
 }

@@ -32,7 +32,8 @@ public class BookingServiceImpls implements BookingService {
         if (!checkAvailableAccommodation(bookingRequestDto.accommodationId())) {
             throw new RuntimeException();
         }
-        Booking booking = bookingRepository.save(bookingMapper.toModel(bookingRequestDto));
+        Booking booking = bookingRepository.save(
+                bookingMapper.toModel(getUser().getId(),bookingRequestDto));
         decreaseAvailableAccommodation(bookingRequestDto.accommodationId());
         return bookingMapper.toDto(booking);
     }
@@ -49,8 +50,7 @@ public class BookingServiceImpls implements BookingService {
     @Transactional(readOnly = true)
     @Override
     public List<BookingResponseDto> findUserBookingAll() {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return bookingRepository.findAllByUserId(user.getId()).stream()
+        return bookingRepository.findAllByUserId(getUser().getId()).stream()
                 .map(bookingMapper::toDto)
                 .toList();
     }
@@ -63,7 +63,7 @@ public class BookingServiceImpls implements BookingService {
                 .findFirst()
                 .orElseThrow(() ->
                         new EntityNotFoundException("Booking with id: " + id + " not found!"));
-        Booking update = bookingMapper.toModel(bookingRequestDto);
+        Booking update = bookingMapper.toModel(getUser().getId(), bookingRequestDto);
         update.setId(id);
         return bookingMapper.toDto(bookingRepository.save(update));
     }
@@ -127,5 +127,9 @@ public class BookingServiceImpls implements BookingService {
         } else {
             throw new RuntimeException("Booking is canceled or expired!");
         }
+    }
+
+    private User getUser() {
+        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }

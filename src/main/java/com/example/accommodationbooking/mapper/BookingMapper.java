@@ -15,8 +15,8 @@ public interface BookingMapper {
     BookingResponseDto toDto(Booking booking);
 
     @Mapping(source = "userId", target = "user",qualifiedByName = "userById")
-    @Mapping(source = "accommodationId",
+    @Mapping(source = "bookingRequestDto.accommodationId",
             target = "accommodation",
             qualifiedByName = "accommodationById")
-    Booking toModel(BookingRequestDto bookingRequestDto);
+    Booking toModel(Long userId, BookingRequestDto bookingRequestDto);
 }
