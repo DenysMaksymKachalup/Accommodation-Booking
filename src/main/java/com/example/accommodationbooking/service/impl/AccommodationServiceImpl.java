@@ -55,4 +55,5 @@ public class AccommodationServiceImpl implements AccommodationService {
     public void deleteById(Long id) {
         accommodationRepository.deleteById(id);
     }
+
 }

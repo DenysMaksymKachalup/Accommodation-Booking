@@ -42,7 +42,7 @@ public class Accommodation {
     @Embedded
     @AttributeOverrides({
             @AttributeOverride(name = "street",
-                    column = @Column(name = "address_street",nullable = false,unique = true)),
+                    column = @Column(name = "address_street",nullable = false)),
             @AttributeOverride(name = "city",
                     column = @Column(name = "address_city",nullable = false))
     })
@@ -63,6 +63,10 @@ public class Accommodation {
 
     @Column(name = "is_deleted")
     private boolean isDeleted = false;
+
+    public Accommodation(Long id) {
+        this.id = id;
+    }
 }
 
 
