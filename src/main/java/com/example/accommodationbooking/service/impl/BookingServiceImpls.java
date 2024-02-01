@@ -12,13 +12,11 @@ import com.example.accommodationbooking.repository.AccommodationRepository;
 import com.example.accommodationbooking.repository.BookingRepository;
 import com.example.accommodationbooking.service.AccommodationService;
 import com.example.accommodationbooking.service.BookingService;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -50,14 +48,6 @@ public class BookingServiceImpls implements BookingService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<BookingResponseDto> findAll() {
-        return bookingRepository.findAll().stream()
-                .map(bookingMapper::toDto)
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
-    @Override
     public List<BookingResponseDto> findUserBookingAll() {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return bookingRepository.findAllByUserId(user.getId()).stream()
@@ -68,10 +58,11 @@ public class BookingServiceImpls implements BookingService {
     @Transactional
     @Override
     public BookingResponseDto updateUserBookingById(Long id, BookingRequestDto bookingRequestDto) {
-        BookingResponseDto bookingResponseDto = findUserBookingAll().stream()
+        findUserBookingAll().stream()
                 .filter(booking -> booking.id().equals(id))
                 .findFirst()
-                .orElseThrow(() -> new EntityNotFoundException("Booking with id: " + id + " not found!"));
+                .orElseThrow(() ->
+                        new EntityNotFoundException("Booking with id: " + id + " not found!"));
         Booking update = bookingMapper.toModel(bookingRequestDto);
         update.setId(id);
         return bookingMapper.toDto(bookingRepository.save(update));
@@ -87,13 +78,27 @@ public class BookingServiceImpls implements BookingService {
                 .toList();
     }
 
+    @Transactional
     @Override
     public void deleteById(Long id) {
-        bookingRepository.deleteById(id);
+        findUserBookingAll().stream()
+                .filter(booking -> booking.id().equals(id))
+                .findFirst()
+                .orElseThrow(() ->
+                        new EntityNotFoundException("Booking with id: " + id + " not found!"));
+
+        updateStatus(id, BookingStatus.CANCELED);
+        increaseAvailableAccommodation(id);
     }
 
     private boolean checkAvailableAccommodation(Long id) {
         return accommodationService.findById(id).availability() >= 1;
+    }
+
+    private void increaseAvailableAccommodation(Long id) {
+        Accommodation accommodation = findAccommodationById(id);
+        accommodation.setAvailability(accommodation.getAvailability() + 1);
+        accommodationRepository.save(accommodation);
     }
 
     private void decreaseAvailableAccommodation(Long id) {
@@ -103,5 +108,24 @@ public class BookingServiceImpls implements BookingService {
                                 "Accommodation with id: " + id + " not found!"));
         accommodation.setAvailability(accommodation.getAvailability() - 1);
         accommodationRepository.save(accommodation);
+    }
+
+    private Accommodation findAccommodationById(Long id) {
+        return accommodationRepository.findById(id).orElseThrow(() ->
+                new EntityNotFoundException(
+                        "Accommodation with id: " + id + " not found!"));
+    }
+
+    private void updateStatus(Long id, BookingStatus status) {
+        Booking booking = bookingRepository.findById(id).orElseThrow(() ->
+                new EntityNotFoundException(
+                        "Booking with id: " + id + " not found!"));
+        if (booking.getBookingStatus() != BookingStatus.CANCELED
+                && booking.getBookingStatus() != BookingStatus.EXPIRED) {
+            booking.setBookingStatus(status);
+            bookingRepository.save(booking);
+        } else {
+            throw new RuntimeException("Booking is canceled or expired!");
+        }
     }
 }

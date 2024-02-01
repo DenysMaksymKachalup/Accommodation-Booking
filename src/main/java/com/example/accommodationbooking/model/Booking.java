@@ -12,19 +12,15 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.time.LocalDate;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
-import java.time.LocalDate;
 
 @Entity
 @Getter
 @Setter
 @Table(name = "bookings")
-@SQLDelete(sql = "UPDATE bookings SET is_deleted = TRUE WHERE id = ?")
-@Where(clause = "is_deleted = FALSE")
 @RequiredArgsConstructor
 public class Booking {
     @Id
@@ -41,8 +37,8 @@ public class Booking {
     @JoinColumn(name = "accommodation_id", nullable = false)
     private Accommodation accommodation;
 
-    @ManyToOne
-    @JoinColumn(name = "users_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @Enumerated(EnumType.STRING)
@@ -50,7 +46,4 @@ public class Booking {
             nullable = false,
             columnDefinition = "VARCHAR(50)")
     private BookingStatus bookingStatus;
-
-    @Column(name = "is_deleted")
-    private boolean isDeleted = false;
 }
