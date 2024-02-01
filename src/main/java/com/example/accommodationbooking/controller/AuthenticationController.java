@@ -1,7 +1,7 @@
 package com.example.accommodationbooking.controller;
 
-import com.example.accommodationbooking.dto.UserLoginRequestDto;
-import com.example.accommodationbooking.dto.UserLoginResponseDto;
+import com.example.accommodationbooking.dto.user.UserLoginRequestDto;
+import com.example.accommodationbooking.dto.user.UserLoginResponseDto;
 import com.example.accommodationbooking.dto.user.UserRegistrationDto;
 import com.example.accommodationbooking.dto.user.UserResponseDto;
 import com.example.accommodationbooking.security.AuthenticationService;
