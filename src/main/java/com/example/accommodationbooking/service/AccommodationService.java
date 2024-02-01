@@ -9,7 +9,7 @@ public interface AccommodationService {
 
     AccommodationResponseDto findById(Long id);
 
-    List<AccommodationResponseDto> findAll(AccommodationRequestDto accommodationRequestDto);
+    List<AccommodationResponseDto> findAll();
 
     AccommodationResponseDto updateById(Long id, AccommodationRequestDto accommodationRequestDto);
 

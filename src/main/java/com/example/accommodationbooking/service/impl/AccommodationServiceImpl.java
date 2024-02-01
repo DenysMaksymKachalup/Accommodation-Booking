@@ -34,8 +34,7 @@ public class AccommodationServiceImpl implements AccommodationService {
     }
 
     @Override
-    public List<AccommodationResponseDto> findAll(
-            AccommodationRequestDto accommodationRequestDto) {
+    public List<AccommodationResponseDto> findAll() {
         return accommodationRepository.findAll().stream()
                 .map(accommodationMapper::toDto)
                 .toList();
@@ -46,9 +45,10 @@ public class AccommodationServiceImpl implements AccommodationService {
             Long id,
             AccommodationRequestDto accommodationRequestDto) {
         findById(id);
-        Accommodation updatedAccommodation = accommodationMapper
+        Accommodation updateAccommodation = accommodationMapper
                 .toModel(accommodationRequestDto);
-        return accommodationMapper.toDto(accommodationRepository.save(updatedAccommodation));
+        updateAccommodation.setId(id);
+        return accommodationMapper.toDto(accommodationRepository.save(updateAccommodation));
     }
 
     @Override
