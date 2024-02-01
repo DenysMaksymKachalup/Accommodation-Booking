@@ -29,7 +29,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain) throws ServletException, IOException {
         String token = getToken(request);
 
-        if (jwtUtil.isValid(token)) {
+        if (token != null && jwtUtil.isValid(token)) {
             String email = jwtUtil.getEmail(token);
             UserDetails userDetails = userDetailsService.loadUserByUsername(email);
             Authentication authentication =
@@ -48,6 +48,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }
-        throw new RuntimeException("Authenticate token has error!");
+        return null;
     }
 }

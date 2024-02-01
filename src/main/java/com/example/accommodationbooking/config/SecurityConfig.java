@@ -1,4 +1,4 @@
-package com.example.accommodationbooking.controller;
+package com.example.accommodationbooking.config;
 
 import com.example.accommodationbooking.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
@@ -23,12 +23,20 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UserDetailsService userDetailsService;
 
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .cors(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(
+                        auth -> auth
+                                .requestMatchers("/auth/**")
+                                .permitAll()
+                                .anyRequest()
+                                .authenticated()
+                )
+                .sessionManagement(session
+                        -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class)
                 .userDetailsService(userDetailsService)

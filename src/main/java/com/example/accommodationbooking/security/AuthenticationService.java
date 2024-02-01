@@ -16,11 +16,11 @@ public class AuthenticationService {
     private final JwtUtil jwtUtil;
 
     public UserLoginResponseDto authenticate(UserLoginRequestDto userLoginRequestDto) {
-        Authentication authenticate = authenticationManager.authenticate(
+        final Authentication authenticate = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         userLoginRequestDto.email(),
                         userLoginRequestDto.password()));
-        String token = jwtUtil.generateToken(userLoginRequestDto.email());
+        String token = jwtUtil.generateToken(authenticate.getName());
         return new UserLoginResponseDto(token);
     }
 }
