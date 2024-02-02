@@ -46,4 +46,8 @@ public class Booking {
             nullable = false,
             columnDefinition = "VARCHAR(50)")
     private BookingStatus bookingStatus;
+
+    public Booking(Long id) {
+        this.id = id;
+    }
 }
