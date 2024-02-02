@@ -1,6 +1,7 @@
 package com.example.accommodationbooking.model;
 
 import com.example.accommodationbooking.model.enumaration.PaymentStatus;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -32,7 +33,7 @@ public class Payment {
 
     @MapsId
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "booking_id", nullable = false)
+    @JoinColumn(name = "booking_id", nullable = false,unique = true)
     private Booking booking;
 
     @Column(name = "session_url", nullable = false)
