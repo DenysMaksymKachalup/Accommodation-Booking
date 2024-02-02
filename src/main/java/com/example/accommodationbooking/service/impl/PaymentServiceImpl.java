@@ -1,7 +1,7 @@
 package com.example.accommodationbooking.service.impl;
 
-import com.example.accommodationbooking.dto.payment.PaymentResponseCancelDto;
 import com.example.accommodationbooking.dto.payment.PaymentRequestDto;
+import com.example.accommodationbooking.dto.payment.PaymentResponseCancelDto;
 import com.example.accommodationbooking.dto.payment.PaymentResponseDto;
 import com.example.accommodationbooking.dto.payment.PaymentResponseWithoutUrlDto;
 import com.example.accommodationbooking.exception.EntityNotFoundException;
@@ -13,7 +13,6 @@ import com.example.accommodationbooking.model.User;
 import com.example.accommodationbooking.model.enumaration.PaymentStatus;
 import com.example.accommodationbooking.repository.BookingRepository;
 import com.example.accommodationbooking.repository.PaymentRepository;
-import com.example.accommodationbooking.service.AccommodationService;
 import com.example.accommodationbooking.service.BookingService;
 import com.example.accommodationbooking.service.PaymentService;
 import com.stripe.Stripe;
@@ -26,7 +25,6 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -40,13 +38,12 @@ public class PaymentServiceImpl implements PaymentService {
     private static final String PRODUCT_DATA_NAME = "Payment for booking";
     private static final String PAYMENT_CURRENCY_USD = "usd";
     private static final BigDecimal PRICE_CORRECTION = BigDecimal.valueOf(100L);
-    private static final String CANCEL_URL = "http://localhost:8080/payments" +
-            "/cancel?session_id={CHECKOUT_SESSION_ID}";
-    private static final String SUCCESS_URL = "http://localhost:8080/payments" +
-            "/success?session_id={CHECKOUT_SESSION_ID}";
+    private static final String CANCEL_URL = "http://localhost:8080/payments"
+            + "/cancel?session_id={CHECKOUT_SESSION_ID}";
+    private static final String SUCCESS_URL = "http://localhost:8080/payments"
+            + "/success?session_id={CHECKOUT_SESSION_ID}";
 
     private final BookingService bookingService;
-    private final AccommodationService accommodationService;
     private final PaymentRepository paymentRepository;
     private final PaymentMapper paymentMapper;
     private final BookingRepository bookingRepository;
@@ -93,7 +90,9 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public PaymentResponseWithoutUrlDto handleSuccessfulPayment(String sessionId) {
         Payment payment = paymentRepository.findBySessionId(sessionId)
-                .orElseThrow(() -> new PaymentException("Payment with sessionId: " + sessionId + " not found!"));
+                .orElseThrow(() ->
+                        new PaymentException("Payment with sessionId: " + sessionId
+                                + " not found!"));
         if (payment.getPaymentStatus().equals(PaymentStatus.PENDING)) {
             payment.setPaymentStatus(PaymentStatus.PAID);
             paymentRepository.save(payment);
@@ -131,7 +130,9 @@ public class PaymentServiceImpl implements PaymentService {
 
     private BigDecimal getTotalPrice(PaymentRequestDto paymentRequestDto) {
         Booking booking = findBookingById(paymentRequestDto.bookingId());
-        long daysBetween = ChronoUnit.DAYS.between(booking.getCheckInDate(), booking.getCheckOutDate());
+        long daysBetween = ChronoUnit.DAYS.between(
+                booking.getCheckInDate(),
+                booking.getCheckOutDate());
 
         return booking.getAccommodation().getDailyRate()
                 .multiply(BigDecimal.valueOf(daysBetween))
@@ -157,8 +158,8 @@ public class PaymentServiceImpl implements PaymentService {
                                 "Booking with id: " + id + "not found!"));
         return bookingRepository.findById(id)
                 .orElseThrow(() ->
-                new EntityNotFoundException(
-                        "Booking with id: " + id + "not found!"));
+                        new EntityNotFoundException(
+                                "Booking with id: " + id + "not found!"));
     }
 
     private Payment savePayment(Session session, PaymentRequestDto paymentRequestDto) {
@@ -174,5 +175,4 @@ public class PaymentServiceImpl implements PaymentService {
     private User getUser() {
         return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
-
 }
