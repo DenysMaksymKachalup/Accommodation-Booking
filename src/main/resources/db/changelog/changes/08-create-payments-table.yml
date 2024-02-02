@@ -13,6 +13,7 @@ databaseChangeLog:
                     nullable: false
                     foreignKeyName: fk-payment-booking_id
                     references: bookings(id)
+                    unique: true
               - column:
                   name: payment_status
                   type: VARCHAR(50)
