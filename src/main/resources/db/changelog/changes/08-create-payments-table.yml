@@ -1,0 +1,33 @@
+databaseChangeLog:
+  - changeSet:
+      id: payments-table
+      author: Denys Kachalup
+      changes:
+        - createTable:
+            tableName: payments
+            columns:
+              - column:
+                  name: booking_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk-payment-booking_id
+                    references: bookings(id)
+              - column:
+                  name: payment_status
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: session_url
+                  type: varchar(511)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: session_id
+                  type: varchar(255)
+              - column:
+                  name: amount_to_pay
+                  type: decimal
+                  constraints:
+                    nullable: false
