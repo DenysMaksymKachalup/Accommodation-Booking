@@ -1,6 +1,7 @@
 package com.example.accommodationbooking.controller;
 
 import com.example.accommodationbooking.dto.payment.PaymentRequestDto;
+import com.example.accommodationbooking.dto.payment.PaymentResponseCancelDto;
 import com.example.accommodationbooking.dto.payment.PaymentResponseDto;
 import com.example.accommodationbooking.dto.payment.PaymentResponseWithoutUrlDto;
 import com.example.accommodationbooking.service.PaymentService;
@@ -12,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping(value = "payments")
@@ -32,8 +35,14 @@ public class PaymentController {
     }
 
     @GetMapping("/cancel")
-    public String handleCanceledPayment() {
-        return "cancel";
+    public PaymentResponseCancelDto handleCanceledPayment(
+            @RequestParam("session_id") String sessionId) {
+        return paymentService.handleCanceledPayment(sessionId);
     }
 
+    @GetMapping()
+    public List<PaymentResponseDto> findAllByUserId(
+            @RequestParam("user_id") Long id) {
+        return paymentService.findAllByUserId(id);
+    }
 }
