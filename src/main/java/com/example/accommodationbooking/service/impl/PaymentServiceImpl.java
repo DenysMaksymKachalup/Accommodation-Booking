@@ -15,6 +15,7 @@ import com.example.accommodationbooking.repository.BookingRepository;
 import com.example.accommodationbooking.repository.PaymentRepository;
 import com.example.accommodationbooking.service.BookingService;
 import com.example.accommodationbooking.service.PaymentService;
+import com.example.accommodationbooking.service.TelegramBotService;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
@@ -47,6 +48,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentRepository paymentRepository;
     private final PaymentMapper paymentMapper;
     private final BookingRepository bookingRepository;
+    private final TelegramBotService telegramBotService;
 
     @Value("${stripe.secret.key}")
     private String stripe;
@@ -62,6 +64,7 @@ public class PaymentServiceImpl implements PaymentService {
         Session session;
         try {
             session = Session.create(getSessionCreateParams(paymentRequestDto));
+            telegramBotService.sendMessage("createPayment");
             return paymentMapper.toDto(savePayment(session, paymentRequestDto));
         } catch (StripeException e) {
             throw new PaymentException("Cant pay for booking!", e);
