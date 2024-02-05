@@ -97,8 +97,7 @@ public class PaymentServiceImpl implements PaymentService {
                 .orElseThrow(() ->
                         new PaymentException("Payment with sessionId: " + sessionId
                                 + " not found!"));
-        Long id = payment.getBooking().getId();
-        Booking booking = findBookingById(id);
+        Booking booking = payment.getBooking();
         if (payment.getPaymentStatus().equals(PaymentStatus.PENDING)
                 && booking.getBookingStatus().equals(BookingStatus.PENDING)) {
             booking.setBookingStatus(BookingStatus.CONFIRMED);
