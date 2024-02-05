@@ -5,6 +5,7 @@ import com.example.accommodationbooking.dto.booking.BookingResponseDto;
 import com.example.accommodationbooking.service.BookingService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,6 +27,7 @@ public class BookingController {
         return bookingService.createBooking(bookingRequestDto);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public BookingResponseDto findById(@PathVariable Long id) {
         return bookingService.findById(id);
@@ -36,6 +38,7 @@ public class BookingController {
         return bookingService.findUserBookingAll();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping()
     public List<BookingResponseDto> findAllByUserIdAndBookingStatus(
             @RequestParam Long id,
