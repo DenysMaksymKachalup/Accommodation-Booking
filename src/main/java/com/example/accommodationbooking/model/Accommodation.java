@@ -1,6 +1,6 @@
 package com.example.accommodationbooking.model;
 
-import com.example.accommodationbooking.model.enumaration.TypeBuilding;
+import com.example.accommodationbooking.model.enumeration.TypeBuilding;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.CollectionTable;
