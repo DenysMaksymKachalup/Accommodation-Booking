@@ -10,10 +10,12 @@ import com.example.accommodationbooking.mapper.PaymentMapper;
 import com.example.accommodationbooking.model.Booking;
 import com.example.accommodationbooking.model.Payment;
 import com.example.accommodationbooking.model.User;
+import com.example.accommodationbooking.model.enumaration.BookingStatus;
 import com.example.accommodationbooking.model.enumaration.PaymentStatus;
 import com.example.accommodationbooking.repository.BookingRepository;
 import com.example.accommodationbooking.repository.PaymentRepository;
 import com.example.accommodationbooking.service.BookingService;
+import com.example.accommodationbooking.service.NotificationTelegramService;
 import com.example.accommodationbooking.service.PaymentService;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
@@ -47,6 +49,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentRepository paymentRepository;
     private final PaymentMapper paymentMapper;
     private final BookingRepository bookingRepository;
+    private final NotificationTelegramService notificationTelegramService;
 
     @Value("${stripe.secret.key}")
     private String stripe;
@@ -81,6 +84,7 @@ public class PaymentServiceImpl implements PaymentService {
             Session session = Session.retrieve(sessionId);
             LocalDate localDate = LocalDate.ofEpochDay(session.getExpiresAt());
             String message = "Ooops, something happened. You can try again until: " + localDate;
+            notificationTelegramService.sendCanceledPaymentText(message);
             return new PaymentResponseCancelDto(message);
         } catch (StripeException e) {
             throw new PaymentException("Cant find session: " + sessionId, e);
@@ -93,11 +97,17 @@ public class PaymentServiceImpl implements PaymentService {
                 .orElseThrow(() ->
                         new PaymentException("Payment with sessionId: " + sessionId
                                 + " not found!"));
-        if (payment.getPaymentStatus().equals(PaymentStatus.PENDING)) {
+        Booking booking = payment.getBooking();
+        if (payment.getPaymentStatus().equals(PaymentStatus.PENDING)
+                && booking.getBookingStatus().equals(BookingStatus.PENDING)) {
+            booking.setBookingStatus(BookingStatus.CONFIRMED);
             payment.setPaymentStatus(PaymentStatus.PAID);
+            bookingRepository.save(booking);
             paymentRepository.save(payment);
         }
-        return paymentMapper.toDtoWithoutUrl(payment);
+        PaymentResponseWithoutUrlDto dtoWithoutUrl = paymentMapper.toDtoWithoutUrl(payment);
+        notificationTelegramService.sendSuccessPaymentText(dtoWithoutUrl);
+        return dtoWithoutUrl;
     }
 
     private SessionCreateParams getSessionCreateParams(PaymentRequestDto paymentRequestDto) {
