@@ -1,6 +1,6 @@
 package com.example.accommodationbooking.model;
 
-import com.example.accommodationbooking.model.enumaration.PaymentStatus;
+import com.example.accommodationbooking.model.enumeration.PaymentStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

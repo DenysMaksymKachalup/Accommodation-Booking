@@ -4,7 +4,7 @@ import com.example.accommodationbooking.dto.user.UserRegistrationDto;
 import com.example.accommodationbooking.dto.user.UserResponseDto;
 import com.example.accommodationbooking.mapper.UserMapper;
 import com.example.accommodationbooking.model.User;
-import com.example.accommodationbooking.model.enumaration.RoleName;
+import com.example.accommodationbooking.model.enumeration.RoleName;
 import com.example.accommodationbooking.repository.RoleRepository;
 import com.example.accommodationbooking.repository.UserRepository;
 import com.example.accommodationbooking.service.UserService;

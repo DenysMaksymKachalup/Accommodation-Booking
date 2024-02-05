@@ -1,4 +1,4 @@
-package com.example.accommodationbooking.model.enumaration;
+package com.example.accommodationbooking.model.enumeration;
 
 public enum TypeBuilding {
     HOUSE,

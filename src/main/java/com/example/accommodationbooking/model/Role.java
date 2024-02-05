@@ -1,6 +1,6 @@
 package com.example.accommodationbooking.model;
 
-import com.example.accommodationbooking.model.enumaration.RoleName;
+import com.example.accommodationbooking.model.enumeration.RoleName;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

@@ -26,7 +26,6 @@ public class NotificationTelegramServiceImpl implements NotificationTelegramServ
                 paymentResponseWithoutUrlDto.sessionId(),
                 paymentResponseWithoutUrlDto.amountToPay(),
                 paymentResponseWithoutUrlDto.paymentStatus());
-
         telegramBotService.sendMessage(message);
     }
 
@@ -72,6 +71,7 @@ public class NotificationTelegramServiceImpl implements NotificationTelegramServ
                 booking.getCheckOutDate(),
                 booking.getAccommodation().getId(),
                 booking.getUser().getId());
+        telegramBotService.sendMessage(message);
     }
 
     @Override

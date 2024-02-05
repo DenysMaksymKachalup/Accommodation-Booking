@@ -2,18 +2,20 @@ package com.example.accommodationbooking.service.impl;
 
 import com.example.accommodationbooking.dto.booking.BookingRequestDto;
 import com.example.accommodationbooking.dto.booking.BookingResponseDto;
+import com.example.accommodationbooking.exception.BookingException;
 import com.example.accommodationbooking.exception.EntityNotFoundException;
 import com.example.accommodationbooking.mapper.BookingMapper;
-import com.example.accommodationbooking.model.Accommodation;
 import com.example.accommodationbooking.model.Booking;
 import com.example.accommodationbooking.model.User;
-import com.example.accommodationbooking.model.enumaration.BookingStatus;
+import com.example.accommodationbooking.model.enumeration.BookingStatus;
 import com.example.accommodationbooking.repository.AccommodationRepository;
 import com.example.accommodationbooking.repository.BookingRepository;
 import com.example.accommodationbooking.service.AccommodationService;
 import com.example.accommodationbooking.service.BookingService;
 import com.example.accommodationbooking.service.NotificationTelegramService;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -21,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class BookingServiceImpls implements BookingService {
+public class BookingServiceImpl implements BookingService {
     private final BookingMapper bookingMapper;
     private final BookingRepository bookingRepository;
     private final AccommodationService accommodationService;
@@ -31,12 +33,11 @@ public class BookingServiceImpls implements BookingService {
     @Transactional
     @Override
     public BookingResponseDto createBooking(BookingRequestDto bookingRequestDto) {
-        if (!checkAvailableAccommodation(bookingRequestDto.accommodationId())) {
-            throw new RuntimeException();
+        if (!checkAvailableAccommodation(bookingRequestDto)) {
+            throw new BookingException("All accommodation is occupied at this date.");
         }
         Booking booking = bookingRepository.save(
                 bookingMapper.toModel(getUser().getId(),bookingRequestDto));
-        decreaseAvailableAccommodation(bookingRequestDto.accommodationId());
         BookingResponseDto dto = bookingMapper.toDto(booking);
         notificationTelegramService.sendSuccessBookingText(dto);
         return dto;
@@ -85,40 +86,27 @@ public class BookingServiceImpls implements BookingService {
     @Transactional
     @Override
     public void deleteById(Long id) {
-        findUserBookingAll().stream()
+        BookingResponseDto bookingResponseDto = findUserBookingAll().stream()
                 .filter(booking -> booking.id().equals(id))
                 .findFirst()
                 .orElseThrow(() ->
                         new EntityNotFoundException("Booking with id: " + id + " not found!"));
 
+        if (Objects.equals(bookingResponseDto.bookingStatus(), BookingStatus.CANCELED.name())) {
+            throw new BookingException("Booking with id: " + id + " already is canceled");
+        }
         Booking booking = updateStatus(id, BookingStatus.CANCELED);
-        increaseAvailableAccommodation(id);
         notificationTelegramService.sendCanceledBookingText(booking);
     }
 
-    private boolean checkAvailableAccommodation(Long id) {
-        return accommodationService.findById(id).availability() >= 1;
-    }
-
-    private void increaseAvailableAccommodation(Long id) {
-        Accommodation accommodation = findAccommodationById(id);
-        accommodation.setAvailability(accommodation.getAvailability() + 1);
-        accommodationRepository.save(accommodation);
-    }
-
-    private void decreaseAvailableAccommodation(Long id) {
-        Accommodation accommodation =
-                accommodationRepository.findById(id).orElseThrow(() ->
-                        new EntityNotFoundException(
-                                "Accommodation with id: " + id + " not found!"));
-        accommodation.setAvailability(accommodation.getAvailability() - 1);
-        accommodationRepository.save(accommodation);
-    }
-
-    private Accommodation findAccommodationById(Long id) {
-        return accommodationRepository.findById(id).orElseThrow(() ->
-                new EntityNotFoundException(
-                        "Accommodation with id: " + id + " not found!"));
+    private boolean checkAvailableAccommodation(BookingRequestDto bookingRequestDto) {
+        LocalDate in = bookingRequestDto.checkInDate();
+        LocalDate out = bookingRequestDto.checkOutDate();
+        List<Booking> bookings = bookingRepository
+                .findAllByCheckOutDateBetween(bookingRequestDto.accommodationId(),in, out);
+        Integer availability = accommodationService
+                .findById(bookingRequestDto.accommodationId()).availability();
+        return availability - bookings.size() >= 10;
     }
 
     private Booking updateStatus(Long id, BookingStatus status) {
@@ -130,12 +118,11 @@ public class BookingServiceImpls implements BookingService {
             booking.setBookingStatus(status);
             return bookingRepository.save(booking);
         } else {
-            throw new RuntimeException("Booking is canceled or expired!");
+            throw new BookingException("Booking is canceled or expired!");
         }
     }
 
     private User getUser() {
         return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
     }
 }
