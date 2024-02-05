@@ -10,15 +10,12 @@ import com.example.accommodationbooking.model.User;
 import com.example.accommodationbooking.model.enumaration.BookingStatus;
 import com.example.accommodationbooking.repository.AccommodationRepository;
 import com.example.accommodationbooking.repository.BookingRepository;
-import com.example.accommodationbooking.repository.UserRepository;
-import com.example.accommodationbooking.security.CustomUserDetailsService;
 import com.example.accommodationbooking.service.AccommodationService;
 import com.example.accommodationbooking.service.BookingService;
 import com.example.accommodationbooking.service.NotificationTelegramService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -138,8 +135,7 @@ public class BookingServiceImpls implements BookingService {
     }
 
     private User getUser() {
-        Object principal =  SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        return (User) principal;
     }
 }
