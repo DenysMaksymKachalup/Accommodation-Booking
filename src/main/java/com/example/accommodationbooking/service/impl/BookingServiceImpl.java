@@ -13,11 +13,9 @@ import com.example.accommodationbooking.repository.BookingRepository;
 import com.example.accommodationbooking.service.AccommodationService;
 import com.example.accommodationbooking.service.BookingService;
 import com.example.accommodationbooking.service.NotificationTelegramService;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -104,9 +102,10 @@ public class BookingServiceImpl implements BookingService {
     private boolean checkAvailableAccommodation(BookingRequestDto bookingRequestDto) {
         LocalDate in = bookingRequestDto.checkInDate();
         LocalDate out = bookingRequestDto.checkOutDate();
-        List<Booking> bookings = bookingRepository.
-                findAllByCheckOutDateBetween(bookingRequestDto.accommodationId(),in, out);
-        Integer availability = accommodationService.findById(bookingRequestDto.accommodationId()).availability();
+        List<Booking> bookings = bookingRepository
+                .findAllByCheckOutDateBetween(bookingRequestDto.accommodationId(),in, out);
+        Integer availability = accommodationService
+                .findById(bookingRequestDto.accommodationId()).availability();
         return availability - bookings.size() >= 10;
     }
 

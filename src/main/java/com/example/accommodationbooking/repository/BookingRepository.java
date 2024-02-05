@@ -2,7 +2,6 @@ package com.example.accommodationbooking.repository;
 
 import com.example.accommodationbooking.model.Booking;
 import com.example.accommodationbooking.model.enumeration.BookingStatus;
-
 import java.time.LocalDate;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
