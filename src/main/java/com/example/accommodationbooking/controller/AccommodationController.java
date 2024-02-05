@@ -6,6 +6,7 @@ import com.example.accommodationbooking.service.AccommodationService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,6 +24,7 @@ public class AccommodationController {
     private final AccommodationService accommodationService;
 
     @PostMapping()
+    @PreAuthorize("hasRole('ADMIN')")
     public AccommodationResponseDto save(
             @RequestBody AccommodationRequestDto accommodationRequestDto) {
         return accommodationService.save(accommodationRequestDto);
@@ -33,11 +35,12 @@ public class AccommodationController {
         return accommodationService.findById(id);
     }
 
-    @GetMapping()
+    @GetMapping("/all_accommodation")
     public List<AccommodationResponseDto> findAll() {
         return accommodationService.findAll();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public AccommodationResponseDto updateById(
             @PathVariable Long id,
@@ -45,6 +48,7 @@ public class AccommodationController {
         return accommodationService.updateById(id,accommodationRequestDto);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")
     public void deleteById(@PathVariable Long id) {
