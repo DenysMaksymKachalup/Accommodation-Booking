@@ -10,11 +10,15 @@ import com.example.accommodationbooking.model.User;
 import com.example.accommodationbooking.model.enumaration.BookingStatus;
 import com.example.accommodationbooking.repository.AccommodationRepository;
 import com.example.accommodationbooking.repository.BookingRepository;
+import com.example.accommodationbooking.repository.UserRepository;
+import com.example.accommodationbooking.security.CustomUserDetailsService;
 import com.example.accommodationbooking.service.AccommodationService;
 import com.example.accommodationbooking.service.BookingService;
+import com.example.accommodationbooking.service.NotificationTelegramService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +29,7 @@ public class BookingServiceImpls implements BookingService {
     private final BookingRepository bookingRepository;
     private final AccommodationService accommodationService;
     private final AccommodationRepository accommodationRepository;
+    private final NotificationTelegramService notificationTelegramService;
 
     @Transactional
     @Override
@@ -35,7 +40,9 @@ public class BookingServiceImpls implements BookingService {
         Booking booking = bookingRepository.save(
                 bookingMapper.toModel(getUser().getId(),bookingRequestDto));
         decreaseAvailableAccommodation(bookingRequestDto.accommodationId());
-        return bookingMapper.toDto(booking);
+        BookingResponseDto dto = bookingMapper.toDto(booking);
+        notificationTelegramService.sendSuccessBookingText(dto);
+        return dto;
     }
 
     @Transactional(readOnly = true)
@@ -87,8 +94,9 @@ public class BookingServiceImpls implements BookingService {
                 .orElseThrow(() ->
                         new EntityNotFoundException("Booking with id: " + id + " not found!"));
 
-        updateStatus(id, BookingStatus.CANCELED);
+        Booking booking = updateStatus(id, BookingStatus.CANCELED);
         increaseAvailableAccommodation(id);
+        notificationTelegramService.sendCanceledBookingText(booking);
     }
 
     private boolean checkAvailableAccommodation(Long id) {
@@ -116,20 +124,22 @@ public class BookingServiceImpls implements BookingService {
                         "Accommodation with id: " + id + " not found!"));
     }
 
-    private void updateStatus(Long id, BookingStatus status) {
+    private Booking updateStatus(Long id, BookingStatus status) {
         Booking booking = bookingRepository.findById(id).orElseThrow(() ->
                 new EntityNotFoundException(
                         "Booking with id: " + id + " not found!"));
         if (booking.getBookingStatus() != BookingStatus.CANCELED
                 && booking.getBookingStatus() != BookingStatus.EXPIRED) {
             booking.setBookingStatus(status);
-            bookingRepository.save(booking);
+            return bookingRepository.save(booking);
         } else {
             throw new RuntimeException("Booking is canceled or expired!");
         }
     }
 
     private User getUser() {
-        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Object principal =  SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        return (User) principal;
     }
 }

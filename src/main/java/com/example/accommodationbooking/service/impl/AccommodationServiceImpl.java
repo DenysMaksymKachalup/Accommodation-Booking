@@ -7,6 +7,7 @@ import com.example.accommodationbooking.mapper.AccommodationMapper;
 import com.example.accommodationbooking.model.Accommodation;
 import com.example.accommodationbooking.repository.AccommodationRepository;
 import com.example.accommodationbooking.service.AccommodationService;
+import com.example.accommodationbooking.service.NotificationTelegramService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,12 +17,15 @@ import org.springframework.stereotype.Service;
 public class AccommodationServiceImpl implements AccommodationService {
     private final AccommodationRepository accommodationRepository;
     private final AccommodationMapper accommodationMapper;
+    private final NotificationTelegramService notificationTelegramService;
 
     @Override
     public AccommodationResponseDto save(AccommodationRequestDto accommodationRequestDto) {
         Accommodation save = accommodationRepository
                 .save(accommodationMapper.toModel(accommodationRequestDto));
-        return accommodationMapper.toDto(save);
+        AccommodationResponseDto dto = accommodationMapper.toDto(save);
+        notificationTelegramService.sendCreateAccommodationText(dto);
+        return dto;
     }
 
     @Override
@@ -54,6 +58,6 @@ public class AccommodationServiceImpl implements AccommodationService {
     @Override
     public void deleteById(Long id) {
         accommodationRepository.deleteById(id);
+        notificationTelegramService.sendDeletedAccommodationText(id);
     }
-
 }
