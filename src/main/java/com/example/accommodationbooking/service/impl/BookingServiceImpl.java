@@ -8,7 +8,6 @@ import com.example.accommodationbooking.mapper.BookingMapper;
 import com.example.accommodationbooking.model.Booking;
 import com.example.accommodationbooking.model.User;
 import com.example.accommodationbooking.model.enumeration.BookingStatus;
-import com.example.accommodationbooking.repository.AccommodationRepository;
 import com.example.accommodationbooking.repository.BookingRepository;
 import com.example.accommodationbooking.service.AccommodationService;
 import com.example.accommodationbooking.service.BookingService;
@@ -27,7 +26,6 @@ public class BookingServiceImpl implements BookingService {
     private final BookingMapper bookingMapper;
     private final BookingRepository bookingRepository;
     private final AccommodationService accommodationService;
-    private final AccommodationRepository accommodationRepository;
     private final NotificationTelegramService notificationTelegramService;
 
     @Transactional
@@ -99,17 +97,8 @@ public class BookingServiceImpl implements BookingService {
         notificationTelegramService.sendCanceledBookingText(booking);
     }
 
-    private boolean checkAvailableAccommodation(BookingRequestDto bookingRequestDto) {
-        LocalDate in = bookingRequestDto.checkInDate();
-        LocalDate out = bookingRequestDto.checkOutDate();
-        List<Booking> bookings = bookingRepository
-                .findAllByCheckOutDateBetween(bookingRequestDto.accommodationId(),in, out);
-        Integer availability = accommodationService
-                .findById(bookingRequestDto.accommodationId()).availability();
-        return availability - bookings.size() >= 10;
-    }
-
-    private Booking updateStatus(Long id, BookingStatus status) {
+    @Override
+    public Booking updateStatus(Long id, BookingStatus status) {
         Booking booking = bookingRepository.findById(id).orElseThrow(() ->
                 new EntityNotFoundException(
                         "Booking with id: " + id + " not found!"));
@@ -120,6 +109,20 @@ public class BookingServiceImpl implements BookingService {
         } else {
             throw new BookingException("Booking is canceled or expired!");
         }
+    }
+
+    private boolean checkAvailableAccommodation(BookingRequestDto bookingRequestDto) {
+        LocalDate in = bookingRequestDto.checkInDate();
+        LocalDate out = bookingRequestDto.checkOutDate();
+        List<Booking> bookings = bookingRepository
+                .findAllByCheckOutDateBetween(bookingRequestDto.accommodationId(),in, out)
+                .stream()
+                .filter(booking -> booking.getBookingStatus() == BookingStatus.CONFIRMED
+                        || booking.getBookingStatus() == BookingStatus.PENDING)
+                .toList();
+        Integer availability = accommodationService
+                .findById(bookingRequestDto.accommodationId()).availability();
+        return availability - bookings.size() >= 1;
     }
 
     private User getUser() {
