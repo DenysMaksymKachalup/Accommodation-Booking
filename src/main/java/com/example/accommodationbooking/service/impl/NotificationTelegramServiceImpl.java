@@ -40,6 +40,11 @@ public class NotificationTelegramServiceImpl implements NotificationTelegramServ
     }
 
     @Override
+    public void sendNotExpiredBookingText() {
+        telegramBotService.sendMessage("No expired bookings today!");
+    }
+
+    @Override
     public void sendSuccessBookingText(BookingResponseDto bookingResponseDto) {
         String message = String.format("""
                         Booking success! Your booking details:
