@@ -47,7 +47,7 @@ public class SchedulingServiceImpl implements SchedulingService {
     }
 
     @Override
-    @Scheduled(fixedDelay = 10_800_000)
+    @Scheduled(fixedDelay = 60000)
     public void checkExpiredPayments() {
         List<Payment> list = paymentRepository.findAllByPaymentStatus(PaymentStatus.PENDING)
                 .stream()
@@ -79,7 +79,7 @@ public class SchedulingServiceImpl implements SchedulingService {
             Session session = Session.retrieve(sessionId);
             Long expiresAt = session.getExpiresAt();
             LocalDateTime dateTime = LocalDateTime.ofInstant(
-                    Instant.ofEpochMilli(expiresAt),
+                    Instant.ofEpochSecond(expiresAt),
                     ZoneId.systemDefault());
 
             if (dateTime.isBefore(LocalDateTime.now())) {
