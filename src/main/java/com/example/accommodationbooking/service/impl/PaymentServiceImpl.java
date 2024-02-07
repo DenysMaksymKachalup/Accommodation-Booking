@@ -25,6 +25,8 @@ import jakarta.annotation.PostConstruct;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +46,7 @@ public class PaymentServiceImpl implements PaymentService {
             + "/cancel?session_id={CHECKOUT_SESSION_ID}";
     private static final String SUCCESS_URL = "http://localhost:8080/payments"
             + "/success?session_id={CHECKOUT_SESSION_ID}";
+    private static final long AMOUNT_DAY = 1L;
 
     private final BookingService bookingService;
     private final PaymentRepository paymentRepository;
@@ -116,6 +119,11 @@ public class PaymentServiceImpl implements PaymentService {
                 .setMode(SessionCreateParams.Mode.PAYMENT)
                 .setSuccessUrl(SUCCESS_URL)
                 .setCancelUrl(CANCEL_URL)
+                .setExpiresAt(
+                        LocalDateTime.now()
+                                .plusDays(AMOUNT_DAY)
+                                .atZone(ZoneId.systemDefault())
+                                .toEpochSecond())
                 .addLineItem(
                         SessionCreateParams.LineItem.builder()
                                 .setQuantity(DEFAULT_QUANTITY)
