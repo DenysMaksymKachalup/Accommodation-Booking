@@ -11,6 +11,7 @@ import com.example.accommodationbooking.model.enumeration.RoleName;
 import com.example.accommodationbooking.repository.RoleRepository;
 import com.example.accommodationbooking.repository.UserRepository;
 import com.example.accommodationbooking.service.UserService;
+import java.util.HashSet;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -54,7 +55,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponseDto addRole(Long id) {
         User user = getUser();
-        user.getRoles().add(getRoleById(id));
+        Set<Role> roles = new HashSet<>();
+        roles.add(getRoleById(id));
+        roles.addAll(user.getRoles());
+        user.setRoles(roles);
         return userMapper.toDto(userRepository.save(user));
     }
 

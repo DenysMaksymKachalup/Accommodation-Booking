@@ -30,6 +30,11 @@ public class Role implements GrantedAuthority {
             columnDefinition = "VARCHAR(100)")
     private RoleName name;
 
+    public Role(Long id, RoleName name) {
+        this.id = id;
+        this.name = name;
+    }
+
     @Override
     public String getAuthority() {
         return name.name();

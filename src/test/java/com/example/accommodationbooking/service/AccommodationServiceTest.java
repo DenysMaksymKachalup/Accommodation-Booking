@@ -1,5 +1,9 @@
 package com.example.accommodationbooking.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+
 import com.example.accommodationbooking.dto.accommodation.AccommodationRequestDto;
 import com.example.accommodationbooking.dto.accommodation.AccommodationResponseDto;
 import com.example.accommodationbooking.dto.accommodation.AddressDto;
@@ -9,6 +13,10 @@ import com.example.accommodationbooking.model.Accommodation;
 import com.example.accommodationbooking.model.Address;
 import com.example.accommodationbooking.model.enumeration.TypeBuilding;
 import com.example.accommodationbooking.repository.AccommodationRepository;
+import com.example.accommodationbooking.service.impl.AccommodationServiceImpl;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,38 +27,36 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 public class AccommodationServiceTest {
+    private static final Long ACCOMMODATION_ID = 1L;
     @Mock
     private AccommodationRepository accommodationRepository;
 
     @Mock
     private AccommodationMapper accommodationMapper;
 
+    @Mock
+    private NotificationTelegramService notificationTelegramService;
+
     @InjectMocks
-    private AccommodationService accommodationService;
+    private AccommodationServiceImpl accommodationService;
 
     @Test
-    @DisplayName("")
-    public void save_ValidAccommodationRequestDto_returnAccommodationDto() {
-        AddressDto addressDto = new AddressDto("street","city");
-        AccommodationRequestDto accommodationRequestDto = new AccommodationRequestDto(
-                "HOUSE",
-                addressDto,
-                "size",
-                List.of("amenities"),
-                BigDecimal.ONE,
-                1
-        );
+    @DisplayName("Test save method with valid "
+            + "AccommodationRequestDto should return AccommodationDto")
+    public void save_validAccommodationRequestDto_returnAccommodationDto() {
+        AddressDto addressDto = new AddressDto("street", "city");
+        AccommodationRequestDto accommodationRequestDto =
+                new AccommodationRequestDto(
+                        "HOUSE",
+                        addressDto,
+                        "size",
+                        List.of("amenities"),
+                        BigDecimal.ONE,
+                        1
+                );
 
         Accommodation accommodation = getAccommodation();
         AccommodationResponseDto accommodationResponseDto = getAccommodationResponseDto();
@@ -61,14 +67,16 @@ public class AccommodationServiceTest {
                 .thenReturn(accommodationResponseDto);
         Mockito.when(accommodationRepository.save(accommodation))
                 .thenReturn(accommodation);
+        Mockito.doNothing().when(notificationTelegramService)
+                .sendCreateAccommodationText(accommodationResponseDto);
 
         AccommodationResponseDto actual = accommodationService.save(accommodationRequestDto);
 
-        assertEquals(accommodationResponseDto,actual);
+        assertEquals(accommodationResponseDto, actual);
     }
 
     @Test
-    @DisplayName("")
+    @DisplayName("Test findAll method should return list of AccommodationDto")
     public void findAll_returnAccommodationDtoList() {
         Accommodation accommodation = getAccommodation();
         AccommodationResponseDto accommodationResponseDto = getAccommodationResponseDto();
@@ -80,40 +88,45 @@ public class AccommodationServiceTest {
 
         List<AccommodationResponseDto> actual = accommodationService.findAll();
 
-        assertEquals(List.of(accommodationResponseDto),actual);
+        assertEquals(List.of(accommodationResponseDto), actual);
     }
 
-
     @Test
-    @DisplayName("")
+    @DisplayName("Test findById method with correct ID should return AccommodationDto")
     public void find_byCorrectId_returnAccommodationDto() {
-        Long accommodationId = 1L;
         Accommodation accommodation = getAccommodation();
         AccommodationResponseDto accommodationResponseDto = getAccommodationResponseDto();
 
-        Mockito.when(accommodationRepository.findById(accommodationId))
+        Mockito.when(accommodationRepository.findById(ACCOMMODATION_ID))
                 .thenReturn(Optional.of(accommodation));
         Mockito.when(accommodationMapper.toDto(accommodation))
                 .thenReturn(accommodationResponseDto);
 
-        AccommodationResponseDto actual = accommodationService.findById(accommodationId);
+        AccommodationResponseDto actual = accommodationService.findById(ACCOMMODATION_ID);
 
-        assertEquals(accommodationResponseDto,actual);
+        assertEquals(accommodationResponseDto, actual);
 
     }
 
     @Test
-    @DisplayName("")
+    @DisplayName("Test findById method with incorrect ID should throw EntityNotFoundException")
     public void find_byIncorrectId_throwEntityNotFoundException() {
-        Long accommodationId = 10L;
-        Mockito.when(accommodationRepository.findById(accommodationId))
+        Mockito.when(accommodationRepository.findById(ACCOMMODATION_ID))
                 .thenReturn(Optional.empty());
-        assertThrows(EntityNotFoundException.class, () -> accommodationService.findById(accommodationId));
+        assertThrows(EntityNotFoundException.class,
+                () -> accommodationService.findById(ACCOMMODATION_ID));
     }
 
     @Test
-    public void update_byCorrectId_return() {
-        AddressDto addressDto = new AddressDto("street","city");
+    @DisplayName("Test updateById method with correct ID should return updated AccommodationDto")
+    public void update_byCorrectId_returnAccommodationDto() {
+
+        Accommodation accommodation = getAccommodation();
+        AccommodationResponseDto accommodationResponseDto = getAccommodationResponseDto();
+
+        Accommodation accommodationForUpdating = getAccommodation();
+        accommodationForUpdating.setAvailability(5);
+        AddressDto addressDto = new AddressDto("street", "city");
         AccommodationRequestDto accommodationRequestDto = new AccommodationRequestDto(
                 "HOUSE",
                 addressDto,
@@ -122,19 +135,12 @@ public class AccommodationServiceTest {
                 BigDecimal.ONE,
                 1
         );
-
-        Long accommodationId = 1L;
-        Accommodation accommodation = getAccommodation();
-        AccommodationResponseDto accommodationResponseDto = getAccommodationResponseDto();
-
         AccommodationResponseDto accommodationUpdateResponseDto =
                 getAccommodationUpdateResponseDto();
-        Accommodation accommodationForUpdating = getAccommodation();
-        accommodationForUpdating.setAvailability(5);
 
-        Mockito.when(accommodationRepository.findById(accommodationId))
+        Mockito.when(accommodationRepository.findById(ACCOMMODATION_ID))
                 .thenReturn(Optional.of(accommodation));
-        Mockito.when(accommodationService.findById(accommodationId))
+        Mockito.when(accommodationService.findById(ACCOMMODATION_ID))
                 .thenReturn(accommodationResponseDto);
         Mockito.when(accommodationMapper.toModel(accommodationRequestDto))
                 .thenReturn(accommodation);
@@ -144,25 +150,27 @@ public class AccommodationServiceTest {
                 .thenReturn(accommodationForUpdating);
 
         AccommodationResponseDto actual =
-                accommodationService.updateById(accommodationId, accommodationRequestDto);
+                accommodationService.updateById(ACCOMMODATION_ID, accommodationRequestDto);
 
-        assertEquals(accommodationUpdateResponseDto,actual);
+        assertEquals(accommodationUpdateResponseDto, actual);
     }
 
     @Test
-    @DisplayName("")
-    public void delete_byIdCorrect_() {
-        Long accommodationId = 1L;
-        Mockito.doNothing().when(accommodationRepository).deleteById(accommodationId);
-        accommodationService.deleteById(accommodationId);
+    @DisplayName("Test deleteById method with correct ID should delete Accommodation")
+    public void delete_byIdCorrect() {
+        Mockito.doNothing().when(notificationTelegramService)
+                .sendDeletedAccommodationText(ACCOMMODATION_ID);
+        Mockito.doNothing().when(accommodationRepository).deleteById(ACCOMMODATION_ID);
+        accommodationService.deleteById(ACCOMMODATION_ID);
         Mockito.verify(accommodationRepository,
-                Mockito.times(1)).deleteById(accommodationId);
+                Mockito.times(1)).deleteById(ACCOMMODATION_ID);
     }
+
     private Accommodation getAccommodation() {
         Address address = new Address();
         address.setCity("city");
         address.setStreet("street");
-        Accommodation accommodation = new Accommodation(1L);
+        Accommodation accommodation = new Accommodation(ACCOMMODATION_ID);
         accommodation.setAvailability(1);
         accommodation.setSize("size");
         accommodation.setType(TypeBuilding.HOUSE);
@@ -174,9 +182,9 @@ public class AccommodationServiceTest {
     }
 
     private AccommodationResponseDto getAccommodationResponseDto() {
-        AddressDto addressDto = new AddressDto("street","city");
+        AddressDto addressDto = new AddressDto("street", "city");
         return new AccommodationResponseDto(
-                1L,
+                ACCOMMODATION_ID,
                 "HOUSE",
                 addressDto,
                 "size",
@@ -185,10 +193,11 @@ public class AccommodationServiceTest {
                 1
         );
     }
+
     private AccommodationResponseDto getAccommodationUpdateResponseDto() {
-        AddressDto addressDto = new AddressDto("street","city");
+        AddressDto addressDto = new AddressDto("street", "city");
         return new AccommodationResponseDto(
-                1L,
+                ACCOMMODATION_ID,
                 "HOUSE",
                 addressDto,
                 "size",
