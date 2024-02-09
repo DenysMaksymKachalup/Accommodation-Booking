@@ -10,9 +10,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.accommodationbooking.dto.accommodation.AccommodationRequestDto;
-import com.example.accommodationbooking.dto.accommodation.AccommodationResponseDto;
 import com.example.accommodationbooking.dto.accommodation.AddressDto;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import java.math.BigDecimal;
+import java.util.List;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -25,9 +25,6 @@ import org.springframework.test.context.jdbc.SqlMergeMode;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-
-import java.math.BigDecimal;
-import java.util.List;
 
 @Sql(scripts = {"classpath:database/insert-accommodation.sql",
         "classpath:database/insert-amenties.sql"},

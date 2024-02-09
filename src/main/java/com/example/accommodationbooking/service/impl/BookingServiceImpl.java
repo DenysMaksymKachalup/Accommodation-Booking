@@ -9,6 +9,7 @@ import com.example.accommodationbooking.model.Booking;
 import com.example.accommodationbooking.model.User;
 import com.example.accommodationbooking.model.enumeration.BookingStatus;
 import com.example.accommodationbooking.repository.BookingRepository;
+import com.example.accommodationbooking.repository.UserRepository;
 import com.example.accommodationbooking.service.AccommodationService;
 import com.example.accommodationbooking.service.BookingService;
 import com.example.accommodationbooking.service.NotificationTelegramService;
@@ -27,6 +28,7 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final AccommodationService accommodationService;
     private final NotificationTelegramService notificationTelegramService;
+    private final UserRepository userRepository;
 
     @Transactional
     @Override
