@@ -3,7 +3,9 @@ package com.example.accommodationbooking.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 
+import ch.qos.logback.classic.util.ContextInitializer;
 import com.example.accommodationbooking.dto.user.UserRegistrationDto;
 import com.example.accommodationbooking.dto.user.UserResponseDto;
 import com.example.accommodationbooking.dto.user.UserUpdateRequestDto;
@@ -17,6 +19,8 @@ import com.example.accommodationbooking.service.impl.AuthenticationFacade;
 import com.example.accommodationbooking.service.impl.UserServiceImpl;
 import java.util.Optional;
 import java.util.Set;
+
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,10 +31,14 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.context.support.WithUserDetails;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.web.context.WebApplicationContext;
+
+import javax.sql.DataSource;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -53,25 +61,19 @@ public class UserServiceImplTest {
     @InjectMocks
     private UserServiceImpl userService;
 
-    private static final UserDetails userDetails = user;
+
     @BeforeAll
-    static void setUp() {
-        user.setFirstName("first");
-        user.setLastName("last");
-        user.setEmail("email");
-        user.setPassword("password");
-        user.setRoles(Set.of(new Role(2L, RoleName.ROLE_ADMIN)));
-        Authentication authentication = Mockito.mock(Authentication.class);
-        Mockito.when(authentication.getPrincipal()).thenReturn(user);
+    @SneakyThrows
+    static void setup(
+            @Autowired DataSource dataSource,
+            @Autowired WebApplicationContext applicationContext
+    ) {
 
-        AuthenticationFacade authenticationFacade = Mockito.mock(AuthenticationFacade.class);
-        Mockito.when(authenticationFacade.getAuthentication()).thenReturn(authentication);
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
     @Test
     @DisplayName("Test user registration")
+    @WithMockUser()
     public void registration_ValidDataNewUser_returnUserResponseDto() {
         Role role = new Role();
         role.setId(2L);
@@ -96,6 +98,7 @@ public class UserServiceImplTest {
 
     @Test
     @DisplayName("Test user update")
+    @WithMockUser()
     public void update_validId_returnUserResponseDto() {
         UserResponseDto userUpdateDto = new UserResponseDto(USER_ID, "email", "firstU", "lastU");
         User userUpdated = new User(USER_ID);
@@ -117,6 +120,7 @@ public class UserServiceImplTest {
 
     @Test
     @DisplayName("Test get user information")
+    @WithUserDetails("admin")
     public void getInformation_returnUserResponseDto() {
         UserResponseDto userDto = getUserResponse();
 
@@ -132,6 +136,7 @@ public class UserServiceImplTest {
 
     @Test
     @DisplayName("Test add role")
+    @WithUserDetails("admin")
     public void addRole_validRoleId_returnUserResponseDto() {
         User userWithRole = new User(USER_ID);
         userWithRole.setRoles(Set.of(new Role(1L, RoleName.ROLE_USER),
