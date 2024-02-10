@@ -14,6 +14,7 @@ import com.example.accommodationbooking.model.enumeration.BookingStatus;
 import com.example.accommodationbooking.model.enumeration.PaymentStatus;
 import com.example.accommodationbooking.repository.BookingRepository;
 import com.example.accommodationbooking.repository.PaymentRepository;
+import com.example.accommodationbooking.repository.UserRepository;
 import com.example.accommodationbooking.service.BookingService;
 import com.example.accommodationbooking.service.NotificationTelegramService;
 import com.example.accommodationbooking.service.PaymentService;
@@ -21,6 +22,7 @@ import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
+import com.sun.security.auth.UserPrincipal;
 import jakarta.annotation.PostConstruct;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -53,6 +55,8 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentMapper paymentMapper;
     private final BookingRepository bookingRepository;
     private final NotificationTelegramService notificationTelegramService;
+    private final UserRepository userRepository;
+    private final AuthenticationFacade authenticationFacade;
 
     @Value("${stripe.secret.key}")
     private String stripe;
@@ -191,6 +195,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     private User getUser() {
-        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UserPrincipal principal = (UserPrincipal) authenticationFacade.getAuthentication().getPrincipal();
+        return userRepository.findUserByEmail(principal.getName()).orElseThrow();
     }
 }
