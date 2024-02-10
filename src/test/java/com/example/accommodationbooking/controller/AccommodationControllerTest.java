@@ -26,9 +26,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-@Sql(scripts = {"classpath:database/insert-accommodation.sql",
-        "classpath:database/insert-amenties.sql"},
-        executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+@Sql(scripts = {"classpath:database/delete-all.sql"},
+        executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @SqlMergeMode(SqlMergeMode.MergeMode.MERGE)
 public class AccommodationControllerTest {
@@ -64,6 +63,8 @@ public class AccommodationControllerTest {
                 .andExpect(jsonPath("$.availability", is(1)));
     }
 
+    @Sql(scripts = {"classpath:database/insert-accommodation.sql",
+            "classpath:database/insert-amenties.sql"})
     @Test
     @WithMockUser(username = "admin",roles = "ADMIN")
     public void find_byId_returnAccommodationResponseDto() throws Exception {
@@ -80,6 +81,8 @@ public class AccommodationControllerTest {
                 .andExpect(jsonPath("$.availability", is(1)));
     }
 
+    @Sql(scripts = {"classpath:database/insert-accommodation.sql",
+            "classpath:database/insert-amenties.sql"})
     @Test
     @WithMockUser(username = "admin",roles = "ADMIN")
     public void updated_byId_returnAccommodationResponseDto() throws Exception {

@@ -17,7 +17,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +29,7 @@ public class BookingServiceImpl implements BookingService {
     private final AccommodationService accommodationService;
     private final NotificationTelegramService notificationTelegramService;
     private final UserRepository userRepository;
+    private final AuthenticationFacade authenticationFacade;
 
     @Transactional
     @Override
@@ -39,7 +40,7 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = bookingRepository.save(
                 bookingMapper.toModel(getUser().getId(),bookingRequestDto));
         BookingResponseDto dto = bookingMapper.toDto(booking);
-        notificationTelegramService.sendSuccessBookingText(dto);
+      //  notificationTelegramService.sendSuccessBookingText(dto);
         return dto;
     }
 
@@ -128,6 +129,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private User getUser() {
-        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UserDetails principal = (UserDetails) authenticationFacade.getAuthentication().getPrincipal();
+        return userRepository.findUserByEmail(principal.getUsername()).orElseThrow();
     }
 }

@@ -13,6 +13,7 @@ import com.example.accommodationbooking.model.User;
 import com.example.accommodationbooking.model.enumeration.RoleName;
 import com.example.accommodationbooking.repository.RoleRepository;
 import com.example.accommodationbooking.repository.UserRepository;
+import com.example.accommodationbooking.service.impl.AuthenticationFacade;
 import com.example.accommodationbooking.service.impl.UserServiceImpl;
 import java.util.Optional;
 import java.util.Set;
@@ -28,6 +29,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
@@ -51,6 +53,7 @@ public class UserServiceImplTest {
     @InjectMocks
     private UserServiceImpl userService;
 
+    private static final UserDetails userDetails = user;
     @BeforeAll
     static void setUp() {
         user.setFirstName("first");
@@ -60,6 +63,10 @@ public class UserServiceImplTest {
         user.setRoles(Set.of(new Role(2L, RoleName.ROLE_ADMIN)));
         Authentication authentication = Mockito.mock(Authentication.class);
         Mockito.when(authentication.getPrincipal()).thenReturn(user);
+
+        AuthenticationFacade authenticationFacade = Mockito.mock(AuthenticationFacade.class);
+        Mockito.when(authenticationFacade.getAuthentication()).thenReturn(authentication);
+
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 

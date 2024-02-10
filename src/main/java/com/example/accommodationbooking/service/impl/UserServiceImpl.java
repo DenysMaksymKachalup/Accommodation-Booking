@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +26,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationFacade authentication;
 
     @Override
     public UserResponseDto registration(UserRegistrationDto userRequestDto) {
@@ -63,9 +65,9 @@ public class UserServiceImpl implements UserService {
     }
 
     private User getUser() {
-        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UserDetails principal = (UserDetails) authentication.getAuthentication().getPrincipal();
+        return userRepository.findUserByEmail(principal.getUsername()).orElseThrow();
     }
-
     private Role getRoleById(Long id) {
         return roleRepository.findById(id)
                 .orElseThrow(
