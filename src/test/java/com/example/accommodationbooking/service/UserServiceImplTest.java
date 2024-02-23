@@ -3,9 +3,7 @@ package com.example.accommodationbooking.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 
-import ch.qos.logback.classic.util.ContextInitializer;
 import com.example.accommodationbooking.dto.user.UserRegistrationDto;
 import com.example.accommodationbooking.dto.user.UserResponseDto;
 import com.example.accommodationbooking.dto.user.UserUpdateRequestDto;
@@ -15,7 +13,6 @@ import com.example.accommodationbooking.model.User;
 import com.example.accommodationbooking.model.enumeration.RoleName;
 import com.example.accommodationbooking.repository.RoleRepository;
 import com.example.accommodationbooking.repository.UserRepository;
-import com.example.accommodationbooking.service.impl.AuthenticationFacade;
 import com.example.accommodationbooking.service.impl.UserServiceImpl;
 import java.util.Optional;
 import java.util.Set;
@@ -32,10 +29,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.context.support.WithUserDetails;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
 import javax.sql.DataSource;
@@ -57,6 +54,9 @@ public class UserServiceImplTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private Authentication authentication;
 
     @InjectMocks
     private UserServiceImpl userService;
@@ -110,7 +110,7 @@ public class UserServiceImplTest {
         Mockito.when(userMapper.toDto(userUpdated)).thenReturn(userUpdateDto);
         Mockito.when(userRepository.save(any())).thenReturn(userUpdated);
 
-        UserResponseDto responseDto = userService.update(userUpdateRequestDto);
+        UserResponseDto responseDto = userService.update(userUpdateRequestDto,authentication);
 
         assertNotNull(responseDto);
         assertEquals("email", responseDto.email());
@@ -126,7 +126,7 @@ public class UserServiceImplTest {
 
         Mockito.when(userMapper.toDto(user)).thenReturn(userDto);
 
-        UserResponseDto responseDto = userService.getUserInformation();
+        UserResponseDto responseDto = userService.getUserInformation(authentication);
 
         assertNotNull(responseDto);
         assertEquals("email", responseDto.email());
@@ -147,7 +147,7 @@ public class UserServiceImplTest {
                 .thenReturn(Optional.of(new Role(2L, RoleName.ROLE_ADMIN)));
         Mockito.when(userMapper.toDto(userWithRole)).thenReturn(getUserResponse());
 
-        UserResponseDto responseDto = userService.addRole(1L);
+        UserResponseDto responseDto = userService.addRole(1L,authentication);
 
         assertNotNull(responseDto);
         assertEquals("email", responseDto.email());

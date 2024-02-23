@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,8 +28,9 @@ public class PaymentController {
     @PostMapping
     @Operation(summary = "Create payment session", description = "Create a new payment session")
     public PaymentResponseDto createPaymentSession(
-            @RequestBody @Valid PaymentRequestDto paymentRequestDto) {
-        return paymentService.createPayment(paymentRequestDto);
+            @RequestBody @Valid PaymentRequestDto paymentRequestDto,
+            Authentication authentication) {
+        return paymentService.createPayment(paymentRequestDto,authentication);
     }
 
     @GetMapping("/success")

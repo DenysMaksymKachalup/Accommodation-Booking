@@ -17,6 +17,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,16 +30,15 @@ public class BookingServiceImpl implements BookingService {
     private final AccommodationService accommodationService;
     private final NotificationTelegramService notificationTelegramService;
     private final UserRepository userRepository;
-    private final AuthenticationFacade authenticationFacade;
 
     @Transactional
     @Override
-    public BookingResponseDto createBooking(BookingRequestDto bookingRequestDto) {
+    public BookingResponseDto createBooking(BookingRequestDto bookingRequestDto, Authentication authentication) {
         if (!checkAvailableAccommodation(bookingRequestDto)) {
             throw new BookingException("All accommodation is occupied at this date.");
         }
         Booking booking = bookingRepository.save(
-                bookingMapper.toModel(getUser().getId(),bookingRequestDto));
+                bookingMapper.toModel(getUserFromAuthentication(authentication).getId(),bookingRequestDto));
         BookingResponseDto dto = bookingMapper.toDto(booking);
       //  notificationTelegramService.sendSuccessBookingText(dto);
         return dto;
@@ -55,21 +55,24 @@ public class BookingServiceImpl implements BookingService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<BookingResponseDto> findUserBookingAll() {
-        return bookingRepository.findAllByUserId(getUser().getId()).stream()
+    public List<BookingResponseDto> findUserBookingAll(Authentication authentication) {
+        return bookingRepository.findAllByUserId(getUserFromAuthentication(authentication).getId()).stream()
                 .map(bookingMapper::toDto)
                 .toList();
     }
 
     @Transactional
     @Override
-    public BookingResponseDto updateUserBookingById(Long id, BookingRequestDto bookingRequestDto) {
-        findUserBookingAll().stream()
+    public BookingResponseDto updateUserBookingById(Long id,
+                                                    BookingRequestDto bookingRequestDto,
+                                                    Authentication authentication) {
+        findUserBookingAll(authentication).stream()
                 .filter(booking -> booking.id().equals(id))
                 .findFirst()
                 .orElseThrow(() ->
                         new EntityNotFoundException("Booking with id: " + id + " not found!"));
-        Booking update = bookingMapper.toModel(getUser().getId(), bookingRequestDto);
+        Booking update = bookingMapper.toModel(getUserFromAuthentication(authentication).getId(),
+                bookingRequestDto);
         update.setId(id);
         return bookingMapper.toDto(bookingRepository.save(update));
     }
@@ -86,8 +89,8 @@ public class BookingServiceImpl implements BookingService {
 
     @Transactional
     @Override
-    public void deleteById(Long id) {
-        BookingResponseDto bookingResponseDto = findUserBookingAll().stream()
+    public void deleteById(Long id, Authentication authentication) {
+        BookingResponseDto bookingResponseDto = findUserBookingAll(authentication).stream()
                 .filter(booking -> booking.id().equals(id))
                 .findFirst()
                 .orElseThrow(() ->
@@ -128,8 +131,9 @@ public class BookingServiceImpl implements BookingService {
         return availability - bookings.size() >= 1;
     }
 
-    private User getUser() {
-        UserDetails principal = (UserDetails) authenticationFacade.getAuthentication().getPrincipal();
-        return userRepository.findUserByEmail(principal.getUsername()).orElseThrow();
+    private User getUserFromAuthentication(Authentication authentication) {
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        return userRepository.findUserByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new EntityNotFoundException("User not found!"));
     }
 }
