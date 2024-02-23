@@ -44,8 +44,6 @@ public class BookingServiceTest {
     private static final Long BOOKING_ID = 1L;
     private static final Long ACCOMMODATION_ID = 1L;
     private static final Long USER_ID = 1L;
-    private static final User user = new User(USER_ID);
-
     @Mock
     private BookingMapper bookingMapper;
 
@@ -66,14 +64,6 @@ public class BookingServiceTest {
 
     @BeforeAll
     static void setUp() {
-        user.setFirstName("firstName");
-        user.setLastName("LastName");
-        user.setEmail("admin");
-        user.setPassword("password");
-        user.setRoles(Set.of(new Role(2L, RoleName.ROLE_ADMIN)));
-        Authentication authentication = Mockito.mock(Authentication.class);
-        Mockito.when(authentication.getPrincipal()).thenReturn(user);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
     @Test
