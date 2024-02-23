@@ -22,7 +22,6 @@ import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
-import com.sun.security.auth.UserPrincipal;
 import jakarta.annotation.PostConstruct;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -33,7 +32,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,7 +56,6 @@ public class PaymentServiceImpl implements PaymentService {
     private final BookingRepository bookingRepository;
     private final NotificationTelegramService notificationTelegramService;
     private final UserRepository userRepository;
-    private final AuthenticationFacade authenticationFacade;
 
     @Value("${stripe.secret.key}")
     private String stripe;
@@ -68,11 +67,11 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Transactional
     @Override
-    public PaymentResponseDto createPayment(PaymentRequestDto paymentRequestDto) {
+    public PaymentResponseDto createPayment(PaymentRequestDto paymentRequestDto,Authentication authentication) {
         Session session;
         try {
-            session = Session.create(getSessionCreateParams(paymentRequestDto));
-            return paymentMapper.toDto(savePayment(session, paymentRequestDto));
+            session = Session.create(getSessionCreateParams(paymentRequestDto,authentication));
+            return paymentMapper.toDto(savePayment(session, paymentRequestDto,authentication));
         } catch (StripeException e) {
             throw new PaymentException("Cant pay for booking!", e);
         }
@@ -117,9 +116,10 @@ public class PaymentServiceImpl implements PaymentService {
         return dtoWithoutUrl;
     }
 
-    private SessionCreateParams getSessionCreateParams(PaymentRequestDto paymentRequestDto) {
+    private SessionCreateParams getSessionCreateParams(PaymentRequestDto paymentRequestDto,
+                                                       Authentication authentication) {
         return SessionCreateParams.builder()
-                .setCustomerEmail(getUser().getEmail())
+                .setCustomerEmail(getUserFromAuthentication(authentication).getEmail())
                 .setMode(SessionCreateParams.Mode.PAYMENT)
                 .setSuccessUrl(SUCCESS_URL)
                 .setCancelUrl(CANCEL_URL)
@@ -131,27 +131,28 @@ public class PaymentServiceImpl implements PaymentService {
                 .addLineItem(
                         SessionCreateParams.LineItem.builder()
                                 .setQuantity(DEFAULT_QUANTITY)
-                                .setPriceData(getPriceData(paymentRequestDto))
+                                .setPriceData(getPriceData(paymentRequestDto,authentication))
                                 .build())
                 .build();
     }
 
     private SessionCreateParams.LineItem.PriceData getPriceData(
-            PaymentRequestDto paymentRequestDto) {
+            PaymentRequestDto paymentRequestDto,
+            Authentication authentication) {
         return SessionCreateParams.LineItem.PriceData.builder()
                 .setCurrency(PAYMENT_CURRENCY_USD)
-                .setUnitAmountDecimal(getTotalPrice(paymentRequestDto))
+                .setUnitAmountDecimal(getTotalPrice(paymentRequestDto,authentication))
                 .setProductData(
                         SessionCreateParams.LineItem.PriceData.ProductData.builder()
                                 .setName(PRODUCT_DATA_NAME)
-                                .setDescription(getBookingDescription(paymentRequestDto))
+                                .setDescription(getBookingDescription(paymentRequestDto,authentication))
                                 .build()
                 )
                 .build();
     }
 
-    private BigDecimal getTotalPrice(PaymentRequestDto paymentRequestDto) {
-        Booking booking = findBookingById(paymentRequestDto.bookingId());
+    private BigDecimal getTotalPrice(PaymentRequestDto paymentRequestDto,Authentication authentication) {
+        Booking booking = findBookingById(paymentRequestDto.bookingId(),authentication);
         long daysBetween = ChronoUnit.DAYS.between(
                 booking.getCheckInDate(),
                 booking.getCheckOutDate());
@@ -161,8 +162,8 @@ public class PaymentServiceImpl implements PaymentService {
                 .multiply(PRICE_CORRECTION);
     }
 
-    public String getBookingDescription(PaymentRequestDto payment) {
-        Booking booking = findBookingById(payment.bookingId());
+    public String getBookingDescription(PaymentRequestDto payment,Authentication authentication) {
+        Booking booking = findBookingById(payment.bookingId(),authentication);
         return "Payment booking for "
                 + booking.getAccommodation().getType()
                 + " at address: "
@@ -171,8 +172,8 @@ public class PaymentServiceImpl implements PaymentService {
                 + booking.getAccommodation().getAddress().getStreet();
     }
 
-    private Booking findBookingById(Long id) {
-        bookingService.findUserBookingAll().stream()
+    private Booking findBookingById(Long id,Authentication authentication) {
+        bookingService.findUserBookingAll(authentication).stream()
                 .filter(booking -> booking.id().equals(id))
                 .findFirst()
                 .orElseThrow(() ->
@@ -184,18 +185,20 @@ public class PaymentServiceImpl implements PaymentService {
                                 "Booking with id: " + id + "not found!"));
     }
 
-    private Payment savePayment(Session session, PaymentRequestDto paymentRequestDto) {
+    private Payment savePayment(Session session,
+                                PaymentRequestDto paymentRequestDto,
+                                Authentication authentication) {
         Payment payment = new Payment();
         payment.setSessionUrl(session.getUrl());
-        payment.setBooking(findBookingById(paymentRequestDto.bookingId()));
+        payment.setBooking(findBookingById(paymentRequestDto.bookingId(),authentication));
         payment.setSessionId(session.getId());
         payment.setAmountToPay(BigDecimal.valueOf(session.getAmountSubtotal())
                 .divide(PRICE_CORRECTION, RoundingMode.valueOf(3)));
         return paymentRepository.save(payment);
     }
 
-    private User getUser() {
-        UserPrincipal principal = (UserPrincipal) authenticationFacade.getAuthentication().getPrincipal();
-        return userRepository.findUserByEmail(principal.getName()).orElseThrow();
+    private User getUserFromAuthentication(Authentication authentication) {
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        return userRepository.findUserByEmail(userDetails.getUsername()).orElseThrow();
     }
 }

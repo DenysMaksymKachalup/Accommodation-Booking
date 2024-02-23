@@ -35,10 +35,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.test.context.support.WithMockUser;
 
 @ExtendWith(MockitoExtension.class)
 public class BookingServiceTest {
@@ -62,6 +61,9 @@ public class BookingServiceTest {
     @InjectMocks
     private BookingServiceImpl bookingService;
 
+    @Mock
+    Authentication authentication;
+
     @BeforeAll
     static void setUp() {
         user.setFirstName("firstName");
@@ -77,6 +79,7 @@ public class BookingServiceTest {
     @Test
     @DisplayName("Test createBooking method with valid "
             + "BookingRequestDto should return BookingResponseDto")
+    @WithMockUser(username = "admin",roles = "ADMIN")
     public void save_validBookingRequestDto_returnBookingDto() {
         BookingRequestDto bookingRequestDto = new BookingRequestDto(
                 LocalDate.of(2024, 2, 1),
@@ -96,7 +99,7 @@ public class BookingServiceTest {
         Mockito.doNothing().when(notificationTelegramService)
                 .sendSuccessBookingText(bookingResponse);
 
-        BookingResponseDto actual = bookingService.createBooking(bookingRequestDto);
+        BookingResponseDto actual = bookingService.createBooking(bookingRequestDto,authentication);
 
         assertEquals(bookingResponse, actual);
     }
@@ -128,13 +131,14 @@ public class BookingServiceTest {
 
     @Test
     @DisplayName("Test findUserBookingAll method should return list of BookingResponseDto")
+    @WithMockUser(username = "admin",roles = "ADMIN")
     public void find_usersBooking_returnBookingDtoList() {
         Booking booking = getBooking();
         BookingResponseDto bookingResponse = getBookingResponseDto();
         Mockito.when(bookingRepository.findAllByUserId(USER_ID))
                 .thenReturn(List.of(booking));
         Mockito.when(bookingMapper.toDto(booking)).thenReturn(bookingResponse);
-        List<BookingResponseDto> userBookingAll = bookingService.findUserBookingAll();
+        List<BookingResponseDto> userBookingAll = bookingService.findUserBookingAll(authentication);
 
         assertEquals(List.of(bookingResponse), userBookingAll);
     }
@@ -142,6 +146,7 @@ public class BookingServiceTest {
     @Test
     @DisplayName("Test updateUserBookingById method with "
             + "correct ID should return updated BookingResponseDto")
+    @WithMockUser(username = "admin",roles = "ADMIN")
     public void update_byCorrectId_returnBookingDto() {
         BookingRequestDto bookingRequestDto = new BookingRequestDto(
                 LocalDate.of(2024, 2, 1),
@@ -162,7 +167,7 @@ public class BookingServiceTest {
         Mockito.when(bookingRepository.save(any(Booking.class))).thenReturn(bookingForUpdate);
 
         BookingResponseDto actual =
-                bookingService.updateUserBookingById(USER_ID, bookingRequestDto);
+                bookingService.updateUserBookingById(USER_ID, bookingRequestDto, authentication);
 
         assertEquals(bookingUpdateResponseDto, actual);
     }
