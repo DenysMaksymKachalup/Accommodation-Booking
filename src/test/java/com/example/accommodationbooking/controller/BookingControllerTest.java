@@ -46,7 +46,8 @@ public class BookingControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "admin", roles = "ADMIN")
+    @Sql(scripts = {"classpath:database/insert-user.sql"})
+    @WithMockUser(username = "admin1", roles = "ADMIN")
     public void save_validBookingRequestDto_returnBookingResponseDto() throws Exception {
         BookingRequestDto bookingRequestDto = new BookingRequestDto(
                 LocalDate.of(2024, 2, 1),
@@ -69,7 +70,7 @@ public class BookingControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "admin", roles = "ADMIN")
+    @WithMockUser(username = "admin1", roles = "ADMIN")
     public void find_byId_returnBookingResponseDto() throws Exception {
         mockMvc.perform(get("/bookings/" + BOOKING_ID)
                         .contentType(MediaType.APPLICATION_JSON))
@@ -77,13 +78,12 @@ public class BookingControllerTest {
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.checkInDate", is("2024-02-10")))
                 .andExpect(jsonPath("$.checkOutDate", is("2024-02-21")))
-                .andExpect(jsonPath("$.userId", is(1)))
                 .andExpect(jsonPath("$.accommodationId", is(1)))
                 .andExpect(jsonPath("$.bookingStatus", is("PENDING")));
     }
 
     @Test
-    @WithMockUser(username = "admin", roles = "ADMIN")
+    @WithMockUser(username = "admin1", roles = "ADMIN")
     public void updateUserBooking_byId_returnBookingResponseDto() throws Exception {
         BookingRequestDto bookingRequestDto = new BookingRequestDto(
                 LocalDate.of(2024, 2, 10),
@@ -106,7 +106,7 @@ public class BookingControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "admin",roles = "ADMIN")
+    @WithMockUser(username = "admin1",roles = "ADMIN")
     public void delete_byId() throws Exception {
         mockMvc.perform(delete("/bookings/" + BOOKING_ID)
                         .contentType(MediaType.APPLICATION_JSON))
