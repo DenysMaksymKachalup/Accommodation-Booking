@@ -152,4 +152,4 @@ I'm always open to collaboration and discussion on any topic. Feel free to reach
 - [Telegram](https://t.me/denyskachalup)
 - [LinkedIn](https://www.linkedin.com/in/denys-kachalup-358430222/)
 
-Thank you for your interest in my Online Book Store project!
+Thank you for your interest in my Accommodation Booking System!
