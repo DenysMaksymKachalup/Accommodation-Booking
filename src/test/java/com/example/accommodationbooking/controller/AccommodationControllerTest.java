@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -48,6 +49,7 @@ public class AccommodationControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = "ADMIN")
+    @DisplayName("Save valid AccommodationRequestDto and return AccommodationResponseDto")
     public void save_validAccommodationRequestDto_returnAccommodationResponseDto()
             throws Exception {
         String jsonRequest = objectMapper.writeValueAsString(getAccommodationRequestDto());
@@ -69,6 +71,7 @@ public class AccommodationControllerTest {
             "classpath:database/insert-amenties.sql"})
     @Test
     @WithMockUser(username = "admin", roles = "ADMIN")
+    @DisplayName("Find by ID and return AccommodationResponseDto")
     public void find_byId_returnAccommodationResponseDto() throws Exception {
         mockMvc.perform(get("/accommodations/" + ACCOMMODATION_ID)
                         .contentType(MediaType.APPLICATION_JSON))
@@ -87,6 +90,7 @@ public class AccommodationControllerTest {
             "classpath:database/insert-amenties.sql"})
     @Test
     @WithMockUser(username = "admin", roles = "ADMIN")
+    @DisplayName("Update by ID and return AccommodationResponseDto")
     public void updated_byId_returnAccommodationResponseDto() throws Exception {
         AddressDto addressDto = new AddressDto("street1", "city1");
         AccommodationRequestDto accommodationRequestDto = new AccommodationRequestDto(
@@ -115,6 +119,7 @@ public class AccommodationControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = "ADMIN")
+    @DisplayName("Delete by ID")
     public void delete_byId() throws Exception {
         mockMvc.perform(delete("/accommodations/" + ACCOMMODATION_ID)
                         .contentType(MediaType.APPLICATION_JSON))

@@ -36,7 +36,7 @@ public class AuthenticationControllerTest {
     }
 
     @Test
-    public void save_validAccommodationRequestDto_returnAccommodationResponseDto()
+    public void registration_validUserRegistrationDto_returnUserLoginResponseDto()
             throws Exception {
         UserRegistrationDto userRegistrationDto =
                 new UserRegistrationDto(
@@ -57,7 +57,7 @@ public class AuthenticationControllerTest {
     }
 
     @Test
-    public void sav_validAccommodationRequestDto_returnAccommodationResponseDto() throws Exception {
+    public void login_validUserLoginRequestDto_returnStringToken() throws Exception {
         UserLoginRequestDto userRegistrationDto =
                 new UserLoginRequestDto(
                         "admin",
