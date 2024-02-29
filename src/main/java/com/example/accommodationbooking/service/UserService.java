@@ -8,7 +8,8 @@ import org.springframework.security.core.Authentication;
 public interface UserService {
     UserResponseDto registration(UserRegistrationDto userRequestDto);
 
-    UserResponseDto update(UserUpdateRequestDto userUpdateRequestDto, Authentication authentication);
+    UserResponseDto update(UserUpdateRequestDto userUpdateRequestDto,
+                           Authentication authentication);
 
     UserResponseDto getUserInformation(Authentication authentication);
 

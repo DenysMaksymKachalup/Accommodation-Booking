@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,14 +32,16 @@ public class BookingServiceImpl implements BookingService {
 
     @Transactional
     @Override
-    public BookingResponseDto createBooking(BookingRequestDto bookingRequestDto, Authentication authentication) {
+    public BookingResponseDto createBooking(BookingRequestDto bookingRequestDto,
+                                            Authentication authentication) {
         if (!checkAvailableAccommodation(bookingRequestDto)) {
             throw new BookingException("All accommodation is occupied at this date.");
         }
         Booking booking = bookingRepository.save(
-                bookingMapper.toModel(getUserFromAuthentication(authentication).getId(),bookingRequestDto));
+                bookingMapper.toModel(
+                        getUserFromAuthentication(authentication).getId(), bookingRequestDto));
         BookingResponseDto dto = bookingMapper.toDto(booking);
-      //  notificationTelegramService.sendSuccessBookingText(dto);
+        //  notificationTelegramService.sendSuccessBookingText(dto);
         return dto;
     }
 
@@ -56,7 +57,8 @@ public class BookingServiceImpl implements BookingService {
     @Transactional(readOnly = true)
     @Override
     public List<BookingResponseDto> findUserBookingAll(Authentication authentication) {
-        return bookingRepository.findAllByUserId(getUserFromAuthentication(authentication).getId()).stream()
+        return bookingRepository.findAllByUserId(
+                getUserFromAuthentication(authentication).getId()).stream()
                 .map(bookingMapper::toDto)
                 .toList();
     }
@@ -100,7 +102,7 @@ public class BookingServiceImpl implements BookingService {
             throw new BookingException("Booking with id: " + id + " already is canceled");
         }
         Booking booking = updateStatus(id, BookingStatus.CANCELED);
-        notificationTelegramService.sendCanceledBookingText(booking);
+        //notificationTelegramService.sendCanceledBookingText(booking);
     }
 
     @Override
@@ -132,8 +134,8 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private User getUserFromAuthentication(Authentication authentication) {
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        return userRepository.findUserByEmail(userDetails.getUsername())
+        String name = authentication.getName();
+        return userRepository.findUserByEmail(name)
                 .orElseThrow(() -> new EntityNotFoundException("User not found!"));
     }
 }

@@ -16,8 +16,6 @@ import com.example.accommodationbooking.repository.UserRepository;
 import com.example.accommodationbooking.service.impl.UserServiceImpl;
 import java.util.Optional;
 import java.util.Set;
-
-import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,14 +26,8 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.security.test.context.support.WithUserDetails;
-import org.springframework.web.context.WebApplicationContext;
-
-import javax.sql.DataSource;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -61,19 +53,17 @@ public class UserServiceImplTest {
     @InjectMocks
     private UserServiceImpl userService;
 
-
     @BeforeAll
-    @SneakyThrows
-    static void setup(
-            @Autowired DataSource dataSource,
-            @Autowired WebApplicationContext applicationContext
-    ) {
-
+    static void setup() {
+        user.setFirstName("firstName");
+        user.setLastName("LastName");
+        user.setEmail("admin");
+        user.setPassword("password");
+        user.setRoles(Set.of(new Role(2L, RoleName.ROLE_ADMIN)));
     }
 
     @Test
     @DisplayName("Test user registration")
-    @WithMockUser()
     public void registration_ValidDataNewUser_returnUserResponseDto() {
         Role role = new Role();
         role.setId(2L);
@@ -98,7 +88,6 @@ public class UserServiceImplTest {
 
     @Test
     @DisplayName("Test user update")
-    @WithMockUser()
     public void update_validId_returnUserResponseDto() {
         UserResponseDto userUpdateDto = new UserResponseDto(USER_ID, "email", "firstU", "lastU");
         User userUpdated = new User(USER_ID);
@@ -109,8 +98,10 @@ public class UserServiceImplTest {
 
         Mockito.when(userMapper.toDto(userUpdated)).thenReturn(userUpdateDto);
         Mockito.when(userRepository.save(any())).thenReturn(userUpdated);
+        Mockito.when(authentication.getName()).thenReturn(user.getEmail());
+        Mockito.when(userRepository.findUserByEmail(user.getEmail())).thenReturn(Optional.of(user));
 
-        UserResponseDto responseDto = userService.update(userUpdateRequestDto,authentication);
+        UserResponseDto responseDto = userService.update(userUpdateRequestDto, authentication);
 
         assertNotNull(responseDto);
         assertEquals("email", responseDto.email());
@@ -120,11 +111,12 @@ public class UserServiceImplTest {
 
     @Test
     @DisplayName("Test get user information")
-    @WithUserDetails("admin")
     public void getInformation_returnUserResponseDto() {
         UserResponseDto userDto = getUserResponse();
 
         Mockito.when(userMapper.toDto(user)).thenReturn(userDto);
+        Mockito.when(authentication.getName()).thenReturn(user.getEmail());
+        Mockito.when(userRepository.findUserByEmail(user.getEmail())).thenReturn(Optional.of(user));
 
         UserResponseDto responseDto = userService.getUserInformation(authentication);
 
@@ -136,7 +128,6 @@ public class UserServiceImplTest {
 
     @Test
     @DisplayName("Test add role")
-    @WithUserDetails("admin")
     public void addRole_validRoleId_returnUserResponseDto() {
         User userWithRole = new User(USER_ID);
         userWithRole.setRoles(Set.of(new Role(1L, RoleName.ROLE_USER),
@@ -146,8 +137,10 @@ public class UserServiceImplTest {
         Mockito.when(roleRepository.findById(1L))
                 .thenReturn(Optional.of(new Role(2L, RoleName.ROLE_ADMIN)));
         Mockito.when(userMapper.toDto(userWithRole)).thenReturn(getUserResponse());
+        Mockito.when(authentication.getName()).thenReturn(user.getEmail());
+        Mockito.when(userRepository.findUserByEmail(user.getEmail())).thenReturn(Optional.of(user));
 
-        UserResponseDto responseDto = userService.addRole(1L,authentication);
+        UserResponseDto responseDto = userService.addRole(1L, authentication);
 
         assertNotNull(responseDto);
         assertEquals("email", responseDto.email());

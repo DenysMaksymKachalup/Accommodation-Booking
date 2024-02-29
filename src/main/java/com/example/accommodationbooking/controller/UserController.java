@@ -1,6 +1,5 @@
 package com.example.accommodationbooking.controller;
 
-
 import com.example.accommodationbooking.dto.user.UserResponseDto;
 import com.example.accommodationbooking.dto.user.UserUpdateRequestDto;
 import com.example.accommodationbooking.service.UserService;
@@ -32,7 +31,8 @@ public class UserController {
     @PutMapping("/me")
     @Operation(summary = "Update user information",
             description = "Update information of the current user")
-    public UserResponseDto update(@RequestBody UserUpdateRequestDto userUpdateDto, Authentication authentication) {
+    public UserResponseDto update(@RequestBody UserUpdateRequestDto userUpdateDto,
+                                  Authentication authentication) {
         return userService.update(userUpdateDto,authentication);
     }
 

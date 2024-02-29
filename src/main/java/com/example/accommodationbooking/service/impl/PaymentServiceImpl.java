@@ -33,7 +33,6 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,7 +66,8 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Transactional
     @Override
-    public PaymentResponseDto createPayment(PaymentRequestDto paymentRequestDto,Authentication authentication) {
+    public PaymentResponseDto createPayment(PaymentRequestDto paymentRequestDto,
+                                            Authentication authentication) {
         Session session;
         try {
             session = Session.create(getSessionCreateParams(paymentRequestDto,authentication));
@@ -90,7 +90,7 @@ public class PaymentServiceImpl implements PaymentService {
             Session session = Session.retrieve(sessionId);
             LocalDate localDate = LocalDate.ofEpochDay(session.getExpiresAt());
             String message = "Ooops, something happened. You can try again until: " + localDate;
-            notificationTelegramService.sendCanceledPaymentText(message);
+            //notificationTelegramService.sendCanceledPaymentText(message);
             return new PaymentResponseCancelDto(message);
         } catch (StripeException e) {
             throw new PaymentException("Cant find session: " + sessionId, e);
@@ -112,7 +112,7 @@ public class PaymentServiceImpl implements PaymentService {
             paymentRepository.save(payment);
         }
         PaymentResponseWithoutUrlDto dtoWithoutUrl = paymentMapper.toDtoWithoutUrl(payment);
-        notificationTelegramService.sendSuccessPaymentText(dtoWithoutUrl);
+        //notificationTelegramService.sendSuccessPaymentText(dtoWithoutUrl);
         return dtoWithoutUrl;
     }
 
@@ -145,13 +145,15 @@ public class PaymentServiceImpl implements PaymentService {
                 .setProductData(
                         SessionCreateParams.LineItem.PriceData.ProductData.builder()
                                 .setName(PRODUCT_DATA_NAME)
-                                .setDescription(getBookingDescription(paymentRequestDto,authentication))
+                                .setDescription(
+                                        getBookingDescription(paymentRequestDto,authentication))
                                 .build()
                 )
                 .build();
     }
 
-    private BigDecimal getTotalPrice(PaymentRequestDto paymentRequestDto,Authentication authentication) {
+    private BigDecimal getTotalPrice(PaymentRequestDto paymentRequestDto,
+                                     Authentication authentication) {
         Booking booking = findBookingById(paymentRequestDto.bookingId(),authentication);
         long daysBetween = ChronoUnit.DAYS.between(
                 booking.getCheckInDate(),
@@ -198,7 +200,8 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     private User getUserFromAuthentication(Authentication authentication) {
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        return userRepository.findUserByEmail(userDetails.getUsername()).orElseThrow();
+        String name = authentication.getName();
+        return userRepository.findUserByEmail(name)
+                .orElseThrow(() -> new EntityNotFoundException("User not found!"));
     }
 }

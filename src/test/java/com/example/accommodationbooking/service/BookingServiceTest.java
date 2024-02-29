@@ -21,6 +21,7 @@ import com.example.accommodationbooking.model.User;
 import com.example.accommodationbooking.model.enumeration.BookingStatus;
 import com.example.accommodationbooking.model.enumeration.RoleName;
 import com.example.accommodationbooking.repository.BookingRepository;
+import com.example.accommodationbooking.repository.UserRepository;
 import com.example.accommodationbooking.service.impl.BookingServiceImpl;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -35,15 +36,19 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.context.support.WithUserDetails;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class BookingServiceTest {
     private static final Long BOOKING_ID = 1L;
     private static final Long ACCOMMODATION_ID = 1L;
     private static final Long USER_ID = 1L;
+    private static final User user = new User(USER_ID);
     @Mock
     private BookingMapper bookingMapper;
 
@@ -60,10 +65,18 @@ public class BookingServiceTest {
     private BookingServiceImpl bookingService;
 
     @Mock
-    Authentication authentication;
+    private Authentication authentication;
+
+    @Mock
+    private UserRepository userRepository;
 
     @BeforeAll
     static void setUp() {
+        user.setFirstName("firstName");
+        user.setLastName("LastName");
+        user.setEmail("admin");
+        user.setPassword("password");
+        user.setRoles(Set.of(new Role(2L, RoleName.ROLE_ADMIN)));
     }
 
     @Test
@@ -86,6 +99,8 @@ public class BookingServiceTest {
         Mockito.when(bookingMapper.toModel(USER_ID, bookingRequestDto)).thenReturn(booking);
         Mockito.when(bookingRepository.save(booking)).thenReturn(booking);
         Mockito.when(bookingMapper.toDto(booking)).thenReturn(bookingResponse);
+        Mockito.when(authentication.getName()).thenReturn(user.getEmail());
+        Mockito.when(userRepository.findUserByEmail(user.getEmail())).thenReturn(Optional.of(user));
         Mockito.doNothing().when(notificationTelegramService)
                 .sendSuccessBookingText(bookingResponse);
 
@@ -128,6 +143,8 @@ public class BookingServiceTest {
         Mockito.when(bookingRepository.findAllByUserId(USER_ID))
                 .thenReturn(List.of(booking));
         Mockito.when(bookingMapper.toDto(booking)).thenReturn(bookingResponse);
+        Mockito.when(authentication.getName()).thenReturn(user.getEmail());
+        Mockito.when(userRepository.findUserByEmail(user.getEmail())).thenReturn(Optional.of(user));
         List<BookingResponseDto> userBookingAll = bookingService.findUserBookingAll(authentication);
 
         assertEquals(List.of(bookingResponse), userBookingAll);
@@ -136,7 +153,7 @@ public class BookingServiceTest {
     @Test
     @DisplayName("Test updateUserBookingById method with "
             + "correct ID should return updated BookingResponseDto")
-    @WithMockUser(username = "admin",roles = "ADMIN")
+    @WithUserDetails()
     public void update_byCorrectId_returnBookingDto() {
         BookingRequestDto bookingRequestDto = new BookingRequestDto(
                 LocalDate.of(2024, 2, 1),
@@ -155,6 +172,8 @@ public class BookingServiceTest {
         Mockito.when(bookingMapper.toModel(USER_ID, bookingRequestDto)).thenReturn(booking);
         Mockito.when(bookingMapper.toDto(any())).thenReturn(bookingUpdateResponseDto);
         Mockito.when(bookingRepository.save(any(Booking.class))).thenReturn(bookingForUpdate);
+        Mockito.when(authentication.getName()).thenReturn(user.getEmail());
+        Mockito.when(userRepository.findUserByEmail(user.getEmail())).thenReturn(Optional.of(user));
 
         BookingResponseDto actual =
                 bookingService.updateUserBookingById(USER_ID, bookingRequestDto, authentication);

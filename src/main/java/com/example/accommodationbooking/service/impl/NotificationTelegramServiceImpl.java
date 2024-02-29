@@ -35,11 +35,6 @@ public class NotificationTelegramServiceImpl implements NotificationTelegramServ
     }
 
     @Override
-    public void sendExpiredPaymentText() {
-
-    }
-
-    @Override
     public void sendNotExpiredBookingText() {
         telegramBotService.sendMessage("No expired bookings today!");
     }

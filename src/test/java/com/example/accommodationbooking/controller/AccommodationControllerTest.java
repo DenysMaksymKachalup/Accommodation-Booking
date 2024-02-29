@@ -11,9 +11,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.example.accommodationbooking.dto.accommodation.AccommodationRequestDto;
 import com.example.accommodationbooking.dto.accommodation.AddressDto;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
 import java.util.List;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,10 +32,11 @@ import org.springframework.web.context.WebApplicationContext;
 @SqlMergeMode(SqlMergeMode.MergeMode.MERGE)
 public class AccommodationControllerTest {
 
+    protected static MockMvc mockMvc;
     private static final String ACCOMMODATION_ID = "1";
+
     @Autowired
     private ObjectMapper objectMapper;
-    protected static MockMvc mockMvc;
 
     @BeforeAll
     static void beforeAll(@Autowired WebApplicationContext applicationContext) {
@@ -46,8 +47,9 @@ public class AccommodationControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "admin",roles = "ADMIN")
-    public void save_validAccommodationRequestDto_returnAccommodationResponseDto() throws Exception {
+    @WithMockUser(username = "admin", roles = "ADMIN")
+    public void save_validAccommodationRequestDto_returnAccommodationResponseDto()
+            throws Exception {
         String jsonRequest = objectMapper.writeValueAsString(getAccommodationRequestDto());
         mockMvc.perform(post("/accommodations")
                         .content(jsonRequest)
@@ -66,7 +68,7 @@ public class AccommodationControllerTest {
     @Sql(scripts = {"classpath:database/insert-accommodation.sql",
             "classpath:database/insert-amenties.sql"})
     @Test
-    @WithMockUser(username = "admin",roles = "ADMIN")
+    @WithMockUser(username = "admin", roles = "ADMIN")
     public void find_byId_returnAccommodationResponseDto() throws Exception {
         mockMvc.perform(get("/accommodations/" + ACCOMMODATION_ID)
                         .contentType(MediaType.APPLICATION_JSON))
@@ -84,19 +86,18 @@ public class AccommodationControllerTest {
     @Sql(scripts = {"classpath:database/insert-accommodation.sql",
             "classpath:database/insert-amenties.sql"})
     @Test
-    @WithMockUser(username = "admin",roles = "ADMIN")
+    @WithMockUser(username = "admin", roles = "ADMIN")
     public void updated_byId_returnAccommodationResponseDto() throws Exception {
-        AddressDto addressDto = new AddressDto("street1","city1");
+        AddressDto addressDto = new AddressDto("street1", "city1");
         AccommodationRequestDto accommodationRequestDto = new AccommodationRequestDto(
                 "HOUSE",
                 addressDto,
                 "sizeUpdate",
-                List.of("amenities1","amenitiesUpdate"),
+                List.of("amenities1", "amenitiesUpdate"),
                 BigDecimal.valueOf(100.00),
                 1
         );
         String jsonRequest = objectMapper.writeValueAsString(accommodationRequestDto);
-
 
         mockMvc.perform(put("/accommodations/" + ACCOMMODATION_ID)
                         .content(jsonRequest)
@@ -110,12 +111,10 @@ public class AccommodationControllerTest {
                 .andExpect(jsonPath("$.amenities[1]", is("amenitiesUpdate")))
                 .andExpect(jsonPath("$.dailyRate", is(100.00)))
                 .andExpect(jsonPath("$.availability", is(1)));
-
-
     }
 
     @Test
-    @WithMockUser(username = "admin",roles = "ADMIN")
+    @WithMockUser(username = "admin", roles = "ADMIN")
     public void delete_byId() throws Exception {
         mockMvc.perform(delete("/accommodations/" + ACCOMMODATION_ID)
                         .contentType(MediaType.APPLICATION_JSON))
@@ -124,12 +123,12 @@ public class AccommodationControllerTest {
     }
 
     private AccommodationRequestDto getAccommodationRequestDto() {
-        AddressDto addressDto = new AddressDto("street1","city1");
+        AddressDto addressDto = new AddressDto("street1", "city1");
         return new AccommodationRequestDto(
                 "HOUSE",
                 addressDto,
                 "size1",
-                List.of("amenities1","amenities1"),
+                List.of("amenities1", "amenities1"),
                 BigDecimal.valueOf(100.00),
                 1
         );

@@ -15,7 +15,6 @@ import java.util.HashSet;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -41,7 +40,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponseDto update(UserUpdateRequestDto userUpdateDto,Authentication authentication) {
+    public UserResponseDto update(UserUpdateRequestDto userUpdateDto,
+                                  Authentication authentication) {
         User user = getUserFromAuthentication(authentication);
         user.setFirstName(userUpdateDto.firstName());
         user.setLastName(userUpdateDto.lastName());
@@ -64,9 +64,11 @@ public class UserServiceImpl implements UserService {
     }
 
     private User getUserFromAuthentication(Authentication authentication) {
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        return userRepository.findUserByEmail(userDetails.getUsername()).orElseThrow();
+        String name = authentication.getName();
+        return userRepository.findUserByEmail(name)
+                .orElseThrow(() -> new EntityNotFoundException("User not found!"));
     }
+
     private Role getRoleById(Long id) {
         return roleRepository.findById(id)
                 .orElseThrow(
