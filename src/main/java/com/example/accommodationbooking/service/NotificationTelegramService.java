@@ -18,7 +18,5 @@ public interface NotificationTelegramService {
 
     void sendDeletedAccommodationText(Long id);
 
-    void sendExpiredPaymentText();
-
     void sendNotExpiredBookingText();
 }

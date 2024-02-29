@@ -35,11 +35,6 @@ public class NotificationTelegramServiceImpl implements NotificationTelegramServ
     }
 
     @Override
-    public void sendExpiredPaymentText() {
-
-    }
-
-    @Override
     public void sendNotExpiredBookingText() {
         telegramBotService.sendMessage("No expired bookings today!");
     }
@@ -105,4 +100,5 @@ public class NotificationTelegramServiceImpl implements NotificationTelegramServ
         telegramBotService.sendMessage(
                 String.format("Accommodation with ID %d has been deleted.", id));
     }
+
 }

@@ -11,9 +11,10 @@ import com.example.accommodationbooking.model.enumeration.RoleName;
 import com.example.accommodationbooking.repository.RoleRepository;
 import com.example.accommodationbooking.repository.UserRepository;
 import com.example.accommodationbooking.service.UserService;
+import java.util.HashSet;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -39,27 +40,33 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponseDto update(UserUpdateRequestDto userUpdateDto) {
-        User user = getUser();
+    public UserResponseDto update(UserUpdateRequestDto userUpdateDto,
+                                  Authentication authentication) {
+        User user = getUserFromAuthentication(authentication);
         user.setFirstName(userUpdateDto.firstName());
         user.setLastName(userUpdateDto.lastName());
         return userMapper.toDto(userRepository.save(user));
     }
 
     @Override
-    public UserResponseDto getUserInformation() {
-        return userMapper.toDto(getUser());
+    public UserResponseDto getUserInformation(Authentication authentication) {
+        return userMapper.toDto(getUserFromAuthentication(authentication));
     }
 
     @Override
-    public UserResponseDto addRole(Long id) {
-        User user = getUser();
-        user.getRoles().add(getRoleById(id));
+    public UserResponseDto addRole(Long id,Authentication authentication) {
+        User user = getUserFromAuthentication(authentication);
+        Set<Role> roles = new HashSet<>();
+        roles.add(getRoleById(id));
+        roles.addAll(user.getRoles());
+        user.setRoles(roles);
         return userMapper.toDto(userRepository.save(user));
     }
 
-    private User getUser() {
-        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    private User getUserFromAuthentication(Authentication authentication) {
+        String name = authentication.getName();
+        return userRepository.findUserByEmail(name)
+                .orElseThrow(() -> new EntityNotFoundException("User not found!"));
     }
 
     private Role getRoleById(Long id) {

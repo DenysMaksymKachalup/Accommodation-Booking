@@ -14,6 +14,7 @@ import com.example.accommodationbooking.model.enumeration.BookingStatus;
 import com.example.accommodationbooking.model.enumeration.PaymentStatus;
 import com.example.accommodationbooking.repository.BookingRepository;
 import com.example.accommodationbooking.repository.PaymentRepository;
+import com.example.accommodationbooking.repository.UserRepository;
 import com.example.accommodationbooking.service.BookingService;
 import com.example.accommodationbooking.service.NotificationTelegramService;
 import com.example.accommodationbooking.service.PaymentService;
@@ -31,7 +32,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,6 +54,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentMapper paymentMapper;
     private final BookingRepository bookingRepository;
     private final NotificationTelegramService notificationTelegramService;
+    private final UserRepository userRepository;
 
     @Value("${stripe.secret.key}")
     private String stripe;
@@ -64,11 +66,12 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Transactional
     @Override
-    public PaymentResponseDto createPayment(PaymentRequestDto paymentRequestDto) {
+    public PaymentResponseDto createPayment(PaymentRequestDto paymentRequestDto,
+                                            Authentication authentication) {
         Session session;
         try {
-            session = Session.create(getSessionCreateParams(paymentRequestDto));
-            return paymentMapper.toDto(savePayment(session, paymentRequestDto));
+            session = Session.create(getSessionCreateParams(paymentRequestDto,authentication));
+            return paymentMapper.toDto(savePayment(session, paymentRequestDto,authentication));
         } catch (StripeException e) {
             throw new PaymentException("Cant pay for booking!", e);
         }
@@ -87,7 +90,7 @@ public class PaymentServiceImpl implements PaymentService {
             Session session = Session.retrieve(sessionId);
             LocalDate localDate = LocalDate.ofEpochDay(session.getExpiresAt());
             String message = "Ooops, something happened. You can try again until: " + localDate;
-            notificationTelegramService.sendCanceledPaymentText(message);
+            //notificationTelegramService.sendCanceledPaymentText(message);
             return new PaymentResponseCancelDto(message);
         } catch (StripeException e) {
             throw new PaymentException("Cant find session: " + sessionId, e);
@@ -109,13 +112,14 @@ public class PaymentServiceImpl implements PaymentService {
             paymentRepository.save(payment);
         }
         PaymentResponseWithoutUrlDto dtoWithoutUrl = paymentMapper.toDtoWithoutUrl(payment);
-        notificationTelegramService.sendSuccessPaymentText(dtoWithoutUrl);
+        //notificationTelegramService.sendSuccessPaymentText(dtoWithoutUrl);
         return dtoWithoutUrl;
     }
 
-    private SessionCreateParams getSessionCreateParams(PaymentRequestDto paymentRequestDto) {
+    private SessionCreateParams getSessionCreateParams(PaymentRequestDto paymentRequestDto,
+                                                       Authentication authentication) {
         return SessionCreateParams.builder()
-                .setCustomerEmail(getUser().getEmail())
+                .setCustomerEmail(getUserFromAuthentication(authentication).getEmail())
                 .setMode(SessionCreateParams.Mode.PAYMENT)
                 .setSuccessUrl(SUCCESS_URL)
                 .setCancelUrl(CANCEL_URL)
@@ -127,27 +131,30 @@ public class PaymentServiceImpl implements PaymentService {
                 .addLineItem(
                         SessionCreateParams.LineItem.builder()
                                 .setQuantity(DEFAULT_QUANTITY)
-                                .setPriceData(getPriceData(paymentRequestDto))
+                                .setPriceData(getPriceData(paymentRequestDto,authentication))
                                 .build())
                 .build();
     }
 
     private SessionCreateParams.LineItem.PriceData getPriceData(
-            PaymentRequestDto paymentRequestDto) {
+            PaymentRequestDto paymentRequestDto,
+            Authentication authentication) {
         return SessionCreateParams.LineItem.PriceData.builder()
                 .setCurrency(PAYMENT_CURRENCY_USD)
-                .setUnitAmountDecimal(getTotalPrice(paymentRequestDto))
+                .setUnitAmountDecimal(getTotalPrice(paymentRequestDto,authentication))
                 .setProductData(
                         SessionCreateParams.LineItem.PriceData.ProductData.builder()
                                 .setName(PRODUCT_DATA_NAME)
-                                .setDescription(getBookingDescription(paymentRequestDto))
+                                .setDescription(
+                                        getBookingDescription(paymentRequestDto,authentication))
                                 .build()
                 )
                 .build();
     }
 
-    private BigDecimal getTotalPrice(PaymentRequestDto paymentRequestDto) {
-        Booking booking = findBookingById(paymentRequestDto.bookingId());
+    private BigDecimal getTotalPrice(PaymentRequestDto paymentRequestDto,
+                                     Authentication authentication) {
+        Booking booking = findBookingById(paymentRequestDto.bookingId(),authentication);
         long daysBetween = ChronoUnit.DAYS.between(
                 booking.getCheckInDate(),
                 booking.getCheckOutDate());
@@ -157,8 +164,8 @@ public class PaymentServiceImpl implements PaymentService {
                 .multiply(PRICE_CORRECTION);
     }
 
-    public String getBookingDescription(PaymentRequestDto payment) {
-        Booking booking = findBookingById(payment.bookingId());
+    public String getBookingDescription(PaymentRequestDto payment,Authentication authentication) {
+        Booking booking = findBookingById(payment.bookingId(),authentication);
         return "Payment booking for "
                 + booking.getAccommodation().getType()
                 + " at address: "
@@ -167,8 +174,8 @@ public class PaymentServiceImpl implements PaymentService {
                 + booking.getAccommodation().getAddress().getStreet();
     }
 
-    private Booking findBookingById(Long id) {
-        bookingService.findUserBookingAll().stream()
+    private Booking findBookingById(Long id,Authentication authentication) {
+        bookingService.findUserBookingAll(authentication).stream()
                 .filter(booking -> booking.id().equals(id))
                 .findFirst()
                 .orElseThrow(() ->
@@ -180,17 +187,21 @@ public class PaymentServiceImpl implements PaymentService {
                                 "Booking with id: " + id + "not found!"));
     }
 
-    private Payment savePayment(Session session, PaymentRequestDto paymentRequestDto) {
+    private Payment savePayment(Session session,
+                                PaymentRequestDto paymentRequestDto,
+                                Authentication authentication) {
         Payment payment = new Payment();
         payment.setSessionUrl(session.getUrl());
-        payment.setBooking(findBookingById(paymentRequestDto.bookingId()));
+        payment.setBooking(findBookingById(paymentRequestDto.bookingId(),authentication));
         payment.setSessionId(session.getId());
         payment.setAmountToPay(BigDecimal.valueOf(session.getAmountSubtotal())
                 .divide(PRICE_CORRECTION, RoundingMode.valueOf(3)));
         return paymentRepository.save(payment);
     }
 
-    private User getUser() {
-        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    private User getUserFromAuthentication(Authentication authentication) {
+        String name = authentication.getName();
+        return userRepository.findUserByEmail(name)
+                .orElseThrow(() -> new EntityNotFoundException("User not found!"));
     }
 }
