@@ -14,7 +14,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 @RequiredArgsConstructor
 public class TelegramBotServiceImpl extends TelegramLongPollingBot implements TelegramBotService {
     @Value("${default.chat.id}")
-    private static String DEFAULT_CHAT_ID;
+    private String defaultChatId;
     private final TelegramBotConfig botConfig;
 
     @Override
@@ -33,7 +33,7 @@ public class TelegramBotServiceImpl extends TelegramLongPollingBot implements Te
 
     @Override
     public void sendMessage(String text) {
-        SendMessage message = new SendMessage(DEFAULT_CHAT_ID, text);
+        SendMessage message = new SendMessage(defaultChatId, text);
         try {
             execute(message);
         } catch (TelegramApiException e) {
