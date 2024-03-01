@@ -30,7 +30,7 @@ public class PaymentController {
     public PaymentResponseDto createPaymentSession(
             @RequestBody @Valid PaymentRequestDto paymentRequestDto,
             Authentication authentication) {
-        return paymentService.createPayment(paymentRequestDto,authentication);
+        return paymentService.createPayment(paymentRequestDto, authentication);
     }
 
     @GetMapping("/success")

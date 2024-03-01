@@ -65,14 +65,13 @@ public class BookingController {
             @PathVariable Long id,
             @RequestBody BookingRequestDto bookingRequestDto,
             Authentication authentication) {
-        return bookingService.updateUserBookingById(id, bookingRequestDto,authentication);
+        return bookingService.updateUserBookingById(id, bookingRequestDto, authentication);
     }
 
     @DeleteMapping("{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Delete booking by ID", description = "Delete booking by ID")
     public void deleteById(@PathVariable Long id, Authentication authentication) {
-        bookingService.deleteById(id,authentication);
+        bookingService.deleteById(id, authentication);
     }
 }
-

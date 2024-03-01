@@ -3,6 +3,7 @@ package com.example.accommodationbooking.service.impl;
 import com.example.accommodationbooking.config.TelegramBotConfig;
 import com.example.accommodationbooking.service.TelegramBotService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -12,7 +13,8 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 @Service
 @RequiredArgsConstructor
 public class TelegramBotServiceImpl extends TelegramLongPollingBot implements TelegramBotService {
-    private static final String DEFAULT_CHAT_ID = "-451264499";
+    @Value("${default.chat.id}")
+    private String defaultChatId;
     private final TelegramBotConfig botConfig;
 
     @Override
@@ -31,11 +33,11 @@ public class TelegramBotServiceImpl extends TelegramLongPollingBot implements Te
 
     @Override
     public void sendMessage(String text) {
-        SendMessage message = new SendMessage(DEFAULT_CHAT_ID, text);
+        SendMessage message = new SendMessage(defaultChatId, text);
         try {
             execute(message);
         } catch (TelegramApiException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Message: " + text + " wasn't sent", e);
         }
     }
 }

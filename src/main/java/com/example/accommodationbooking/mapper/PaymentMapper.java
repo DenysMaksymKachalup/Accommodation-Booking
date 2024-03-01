@@ -14,5 +14,4 @@ public interface PaymentMapper {
 
     @Mapping(source = "booking.id", target = "bookingId")
     PaymentResponseWithoutUrlDto toDtoWithoutUrl(Payment payment);
-
 }

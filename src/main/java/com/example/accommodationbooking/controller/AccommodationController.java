@@ -52,7 +52,7 @@ public class AccommodationController {
     public AccommodationResponseDto updateById(
             @PathVariable Long id,
             @RequestBody AccommodationRequestDto accommodationRequestDto) {
-        return accommodationService.updateById(id,accommodationRequestDto);
+        return accommodationService.updateById(id, accommodationRequestDto);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
