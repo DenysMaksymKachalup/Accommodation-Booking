@@ -37,7 +37,7 @@ public class TelegramBotServiceImpl extends TelegramLongPollingBot implements Te
         try {
             execute(message);
         } catch (TelegramApiException e) {
-            throw new RuntimeException("Message: "+ text + " wasn't sent",e);
+            throw new RuntimeException("Message: " + text + " wasn't sent", e);
         }
     }
 }
