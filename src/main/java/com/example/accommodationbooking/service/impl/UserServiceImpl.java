@@ -54,7 +54,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponseDto addRole(Long id,Authentication authentication) {
+    public UserResponseDto addRole(Long id, Authentication authentication) {
         User user = getUserFromAuthentication(authentication);
         Set<Role> roles = new HashSet<>();
         roles.add(getRoleById(id));

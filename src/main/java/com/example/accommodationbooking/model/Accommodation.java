@@ -42,9 +42,9 @@ public class Accommodation {
     @Embedded
     @AttributeOverrides({
             @AttributeOverride(name = "street",
-                    column = @Column(name = "address_street",nullable = false)),
+                    column = @Column(name = "address_street", nullable = false)),
             @AttributeOverride(name = "city",
-                    column = @Column(name = "address_city",nullable = false))
+                    column = @Column(name = "address_city", nullable = false))
     })
     private Address address;
 
@@ -68,6 +68,3 @@ public class Accommodation {
         this.id = id;
     }
 }
-
-
-

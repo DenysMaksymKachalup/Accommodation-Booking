@@ -36,7 +36,7 @@ public class SchedulingServiceImpl implements SchedulingService {
                 .findAllByBookingStatusAndCheckOutDateIsLessThanEqual(
                         BookingStatus.CONFIRMED, LocalDate.now())
                 .stream()
-                .map(booking -> updateBookingStatus(booking,BookingStatus.EXPIRED))
+                .map(booking -> updateBookingStatus(booking, BookingStatus.EXPIRED))
                 .toList();
 
         if (list.isEmpty()) {
@@ -83,7 +83,7 @@ public class SchedulingServiceImpl implements SchedulingService {
                     ZoneId.systemDefault());
 
             if (dateTime.isBefore(LocalDateTime.now())) {
-                bookingService.updateStatus(payment.getBooking().getId(),BookingStatus.CANCELED);
+                bookingService.updateStatus(payment.getBooking().getId(), BookingStatus.CANCELED);
                 payment.setPaymentStatus(PaymentStatus.EXPIRED);
             }
 
@@ -93,4 +93,3 @@ public class SchedulingServiceImpl implements SchedulingService {
         }
     }
 }
-

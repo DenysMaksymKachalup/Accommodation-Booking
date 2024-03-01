@@ -32,15 +32,15 @@ public class Payment {
 
     @MapsId
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "booking_id", nullable = false,unique = true)
+    @JoinColumn(name = "booking_id", nullable = false, unique = true)
     private Booking booking;
 
     @Column(name = "session_url", nullable = false)
     private String sessionUrl;
 
-    @Column(name = "session_id",nullable = false)
+    @Column(name = "session_id", nullable = false)
     private String sessionId;
 
-    @Column(name = "amount_to_pay",nullable = false)
+    @Column(name = "amount_to_pay", nullable = false)
     private BigDecimal amountToPay;
 }

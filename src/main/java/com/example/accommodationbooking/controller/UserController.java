@@ -33,12 +33,12 @@ public class UserController {
             description = "Update information of the current user")
     public UserResponseDto update(@RequestBody UserUpdateRequestDto userUpdateDto,
                                   Authentication authentication) {
-        return userService.update(userUpdateDto,authentication);
+        return userService.update(userUpdateDto, authentication);
     }
 
     @PutMapping("/{id}/role")
     @Operation(summary = "Update user role by ID", description = "Update user role by ID")
-    public UserResponseDto update(@PathVariable Long id,Authentication authentication) {
-        return userService.addRole(id,authentication);
+    public UserResponseDto update(@PathVariable Long id, Authentication authentication) {
+        return userService.addRole(id, authentication);
     }
 }

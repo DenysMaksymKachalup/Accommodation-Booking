@@ -7,7 +7,7 @@ import com.example.accommodationbooking.model.Accommodation;
 import org.mapstruct.Mapper;
 import org.mapstruct.Named;
 
-@Mapper(config = MapperConfig.class,uses = AddressMapper.class)
+@Mapper(config = MapperConfig.class, uses = AddressMapper.class)
 public interface AccommodationMapper {
     AccommodationResponseDto toDto(Accommodation accommodation);
 

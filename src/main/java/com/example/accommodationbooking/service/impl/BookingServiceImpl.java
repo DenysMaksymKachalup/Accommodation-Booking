@@ -41,7 +41,7 @@ public class BookingServiceImpl implements BookingService {
                 bookingMapper.toModel(
                         getUserFromAuthentication(authentication).getId(), bookingRequestDto));
         BookingResponseDto dto = bookingMapper.toDto(booking);
-        //  notificationTelegramService.sendSuccessBookingText(dto);
+        notificationTelegramService.sendSuccessBookingText(dto);
         return dto;
     }
 
@@ -58,7 +58,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<BookingResponseDto> findUserBookingAll(Authentication authentication) {
         return bookingRepository.findAllByUserId(
-                getUserFromAuthentication(authentication).getId()).stream()
+                        getUserFromAuthentication(authentication).getId()).stream()
                 .map(bookingMapper::toDto)
                 .toList();
     }
@@ -83,7 +83,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<BookingResponseDto> findAllByUserIdAndBookingStatus(Long id, String status) {
         return bookingRepository
-                .findAllByUserIdAndBookingStatus(id,BookingStatus.valueOf(status))
+                .findAllByUserIdAndBookingStatus(id, BookingStatus.valueOf(status))
                 .stream()
                 .map(bookingMapper::toDto)
                 .toList();
@@ -102,7 +102,7 @@ public class BookingServiceImpl implements BookingService {
             throw new BookingException("Booking with id: " + id + " already is canceled");
         }
         Booking booking = updateStatus(id, BookingStatus.CANCELED);
-        //notificationTelegramService.sendCanceledBookingText(booking);
+        notificationTelegramService.sendCanceledBookingText(booking);
     }
 
     @Override
@@ -123,7 +123,7 @@ public class BookingServiceImpl implements BookingService {
         LocalDate in = bookingRequestDto.checkInDate();
         LocalDate out = bookingRequestDto.checkOutDate();
         List<Booking> bookings = bookingRepository
-                .findAllByCheckOutDateBetween(bookingRequestDto.accommodationId(),in, out)
+                .findAllByCheckOutDateBetween(bookingRequestDto.accommodationId(), in, out)
                 .stream()
                 .filter(booking -> booking.getBookingStatus() == BookingStatus.CONFIRMED
                         || booking.getBookingStatus() == BookingStatus.PENDING)
