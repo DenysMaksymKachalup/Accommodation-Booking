@@ -71,6 +71,7 @@ public class BookingControllerTest {
 
     @Test
     @WithMockUser(username = "admin1", roles = "ADMIN")
+    @Sql(scripts = "classpath:database/insert-booking.sql")
     @DisplayName("Find by ID and return BookingResponseDto")
     public void find_byId_returnBookingResponseDto() throws Exception {
         mockMvc.perform(get("/bookings/" + BOOKING_ID)
