@@ -15,8 +15,6 @@ import org.springframework.test.context.jdbc.Sql;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Sql(scripts = {"classpath:database/insert-user-repository-test.sql"},
         executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
-@Sql(scripts = {"classpath:database/delete-all.sql"},
-        executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
 public class UserRepositoryTest {
     private static final String EMAIL = "adminUser";
 

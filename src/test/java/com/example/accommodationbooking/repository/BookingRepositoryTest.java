@@ -19,8 +19,6 @@ import org.springframework.test.context.jdbc.Sql;
         "classpath:database/insert-user-booking_repository-test.sql",
         "classpath:database/insert-booking.sql"},
         executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
-@Sql(scripts = {"classpath:database/delete-all.sql"},
-        executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
 public class BookingRepositoryTest {
     private static final Long USER_ID = 1L;
 
