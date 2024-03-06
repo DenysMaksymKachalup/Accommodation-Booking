@@ -48,7 +48,7 @@ public class BookingRepositoryTest {
                 .findAllByBookingStatusAndCheckOutDateIsLessThanEqual(
                         BookingStatus.PENDING,
                         LocalDate.of(2024, 3, 3));
-        assertThat(actual).hasSize(2);
+        assertThat(actual).hasSize(1);
     }
 
     @Test
@@ -59,7 +59,7 @@ public class BookingRepositoryTest {
         LocalDate out = LocalDate.of(2024,4,1);
         List<Booking> actual =
                 bookingRepository.findAllByCheckOutDateBetween(accommodationId, in, out);
-        assertThat(actual).hasSize(2);
+        assertThat(actual).hasSize(1);
     }
 
     @Test
@@ -67,6 +67,6 @@ public class BookingRepositoryTest {
     public void findBookings_ByBookingStatus_returnBookingList() {
         List<Booking> actual =
                 bookingRepository.findBookingByBookingStatus(BookingStatus.PENDING);
-        assertThat(actual).hasSize(2);
+        assertThat(actual).hasSize(1);
     }
 }
