@@ -1,1 +1,1 @@
-DELETE FROM bookings;
+DELETE FROM payments;

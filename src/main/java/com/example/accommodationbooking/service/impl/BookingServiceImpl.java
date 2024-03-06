@@ -41,7 +41,7 @@ public class BookingServiceImpl implements BookingService {
                 bookingMapper.toModel(
                         getUserFromAuthentication(authentication).getId(), bookingRequestDto));
         BookingResponseDto dto = bookingMapper.toDto(booking);
-        notificationTelegramService.sendSuccessBookingText(dto);
+        //notificationTelegramService.sendSuccessBookingText(dto);
         return dto;
     }
 
@@ -102,7 +102,7 @@ public class BookingServiceImpl implements BookingService {
             throw new BookingException("Booking with id: " + id + " already is canceled");
         }
         Booking booking = updateStatus(id, BookingStatus.CANCELED);
-        notificationTelegramService.sendCanceledBookingText(booking);
+        //notificationTelegramService.sendCanceledBookingText(booking);
     }
 
     @Override
