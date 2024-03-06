@@ -25,9 +25,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-@Sql(scripts = {"classpath:database/insert-accommodation.sql"},
+@Sql(scripts = {"classpath:database/insert-accommodation.sql",
+        "classpath:database/insert-user.sql"},
         executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
-
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @SqlMergeMode(SqlMergeMode.MergeMode.MERGE)
 public class BookingControllerTest {
@@ -46,7 +46,6 @@ public class BookingControllerTest {
     }
 
     @Test
-    @Sql(scripts = {"classpath:database/insert-user.sql"})
     @WithMockUser(username = "admin1", roles = "ADMIN")
     @DisplayName("Save valid BookingRequestDto and return BookingResponseDto")
     public void save_validBookingRequestDto_returnBookingResponseDto() throws Exception {
