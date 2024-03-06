@@ -15,7 +15,8 @@ import org.springframework.test.context.jdbc.Sql;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Sql(scripts = {"classpath:database/insert-accommodation.sql",
+@Sql(scripts = {"classpath:database/delete-all.sql",
+        "classpath:database/insert-accommodation.sql",
         "classpath:database/insert-user-booking_repository-test.sql",
         "classpath:database/insert-booking.sql"},
         executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
@@ -48,7 +49,7 @@ public class BookingRepositoryTest {
                 .findAllByBookingStatusAndCheckOutDateIsLessThanEqual(
                         BookingStatus.PENDING,
                         LocalDate.of(2024, 3, 3));
-        assertThat(actual).hasSize(2);
+        assertThat(actual).hasSize(1);
     }
 
     @Test
@@ -59,7 +60,7 @@ public class BookingRepositoryTest {
         LocalDate out = LocalDate.of(2024,4,1);
         List<Booking> actual =
                 bookingRepository.findAllByCheckOutDateBetween(accommodationId, in, out);
-        assertThat(actual).hasSize(2);
+        assertThat(actual).hasSize(1);
     }
 
     @Test
@@ -67,6 +68,6 @@ public class BookingRepositoryTest {
     public void findBookings_ByBookingStatus_returnBookingList() {
         List<Booking> actual =
                 bookingRepository.findBookingByBookingStatus(BookingStatus.PENDING);
-        assertThat(actual).hasSize(2);
+        assertThat(actual).hasSize(1);
     }
 }
