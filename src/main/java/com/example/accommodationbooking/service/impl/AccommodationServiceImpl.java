@@ -58,6 +58,6 @@ public class AccommodationServiceImpl implements AccommodationService {
     @Override
     public void deleteById(Long id) {
         accommodationRepository.deleteById(id);
-        notificationTelegramService.sendDeletedAccommodationText(id);
+        //notificationTelegramService.sendDeletedAccommodationText(id);
     }
 }

@@ -23,7 +23,7 @@ import org.springframework.test.context.jdbc.Sql;
 @Sql(scripts = {"classpath:database/delete-all.sql"},
         executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
 public class PaymentRepositoryTest {
-    private static final Long USER_ID = 2L;
+    private static final Long USER_ID = 1L;
     private static final String SESSION_ID = "session123";
 
     @Autowired

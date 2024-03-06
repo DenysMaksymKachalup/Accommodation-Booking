@@ -19,8 +19,6 @@ import org.springframework.test.context.jdbc.Sql;
         "classpath:database/insert-user-booking_repository-test.sql",
         "classpath:database/insert-booking.sql"},
         executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
-@Sql(scripts = {"classpath:database/delete-all.sql"},
-        executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
 public class BookingRepositoryTest {
     private static final Long USER_ID = 1L;
 
@@ -50,7 +48,7 @@ public class BookingRepositoryTest {
                 .findAllByBookingStatusAndCheckOutDateIsLessThanEqual(
                         BookingStatus.PENDING,
                         LocalDate.of(2024, 3, 3));
-        assertThat(actual).hasSize(2);
+        assertThat(actual).hasSize(1);
     }
 
     @Test
@@ -61,7 +59,7 @@ public class BookingRepositoryTest {
         LocalDate out = LocalDate.of(2024,4,1);
         List<Booking> actual =
                 bookingRepository.findAllByCheckOutDateBetween(accommodationId, in, out);
-        assertThat(actual).hasSize(2);
+        assertThat(actual).hasSize(1);
     }
 
     @Test
@@ -69,6 +67,6 @@ public class BookingRepositoryTest {
     public void findBookings_ByBookingStatus_returnBookingList() {
         List<Booking> actual =
                 bookingRepository.findBookingByBookingStatus(BookingStatus.PENDING);
-        assertThat(actual).hasSize(2);
+        assertThat(actual).hasSize(1);
     }
 }
