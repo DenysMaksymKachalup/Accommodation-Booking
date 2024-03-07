@@ -112,7 +112,7 @@ public class PaymentServiceImpl implements PaymentService {
             paymentRepository.save(payment);
         }
         PaymentResponseWithoutUrlDto dtoWithoutUrl = paymentMapper.toDtoWithoutUrl(payment);
-        //notificationTelegramService.sendSuccessPaymentText(dtoWithoutUrl);
+        notificationTelegramService.sendSuccessPaymentText(dtoWithoutUrl);
         return dtoWithoutUrl;
     }
 

@@ -24,7 +24,7 @@ public class AccommodationServiceImpl implements AccommodationService {
         Accommodation save = accommodationRepository
                 .save(accommodationMapper.toModel(accommodationRequestDto));
         AccommodationResponseDto dto = accommodationMapper.toDto(save);
-        //notificationTelegramService.sendCreateAccommodationText(dto);
+        notificationTelegramService.sendCreateAccommodationText(dto);
         return dto;
     }
 
@@ -58,6 +58,6 @@ public class AccommodationServiceImpl implements AccommodationService {
     @Override
     public void deleteById(Long id) {
         accommodationRepository.deleteById(id);
-        //notificationTelegramService.sendDeletedAccommodationText(id);
+        notificationTelegramService.sendDeletedAccommodationText(id);
     }
 }
