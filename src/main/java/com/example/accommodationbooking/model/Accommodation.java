@@ -34,11 +34,9 @@ public class Accommodation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "type_building", nullable = false, columnDefinition = "VARCHAR(50)")
     private TypeBuilding type;
-
     @Embedded
     @AttributeOverrides({
             @AttributeOverride(name = "street",
@@ -47,20 +45,15 @@ public class Accommodation {
                     column = @Column(name = "address_city", nullable = false))
     })
     private Address address;
-
     @Column(name = "size", nullable = false)
     private String size;
-
     @ElementCollection
     @CollectionTable(name = "accommodations_amenities")
     private List<String> amenities = new ArrayList<>();
-
     @Column(name = "daily_rate", nullable = false)
     private BigDecimal dailyRate;
-
     @Column(name = "availability", nullable = false)
     private Integer availability;
-
     @Column(name = "is_deleted")
     private boolean isDeleted = false;
 
