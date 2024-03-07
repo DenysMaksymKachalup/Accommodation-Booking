@@ -30,10 +30,8 @@ import org.springframework.web.context.WebApplicationContext;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @SqlMergeMode(SqlMergeMode.MergeMode.MERGE)
 public class AccommodationControllerTest {
-
-    protected static MockMvc mockMvc;
+    private static MockMvc mockMvc;
     private static final String ACCOMMODATION_ID = "1";
-
     @Autowired
     private ObjectMapper objectMapper;
 

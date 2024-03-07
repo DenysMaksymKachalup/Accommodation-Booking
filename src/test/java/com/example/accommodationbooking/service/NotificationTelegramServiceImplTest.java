@@ -24,13 +24,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 public class NotificationTelegramServiceImplTest {
-
     private static final Long BOOKING_ID = 1L;
     private static final Long ACCOMMODATION_ID = 1L;
     private static final Long USER_ID = 1L;
     @Mock
     private TelegramBotService telegramBotService;
-
     @InjectMocks
     private NotificationTelegramServiceImpl notificationTelegramService;
 

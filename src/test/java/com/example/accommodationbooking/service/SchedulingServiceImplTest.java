@@ -22,19 +22,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class SchedulingServiceImplTest {
-
     private static final Long BOOKING_ID = 1L;
     private static final Long ACCOMMODATION_ID = 1L;
     private static final Long USER_ID = 1L;
     @Mock
     private BookingRepository bookingRepository;
-
     @Mock
     private PaymentRepository paymentRepository;
-
     @Mock
     private NotificationTelegramService notificationTelegramService;
-
     @InjectMocks
     private SchedulingServiceImpl schedulingService;
 
@@ -60,6 +56,7 @@ class SchedulingServiceImplTest {
         booking.setBookingStatus(BookingStatus.CONFIRMED);
         booking.setCheckOutDate(LocalDate.now().minusDays(1));
         List<Booking> bookings = List.of(booking);
+
         Mockito.when(bookingRepository.findAllByBookingStatusAndCheckOutDateIsLessThanEqual(
                         BookingStatus.CONFIRMED, LocalDate.now()))
                 .thenReturn(bookings);
@@ -75,7 +72,6 @@ class SchedulingServiceImplTest {
     void checkPaymentCreation() {
         Booking booking = getBooking();
         List<Booking> bookings = List.of(booking);
-
         Booking bookingUpdateStatus = getBooking();
         bookingUpdateStatus.setBookingStatus(BookingStatus.CONFIRMED);
 

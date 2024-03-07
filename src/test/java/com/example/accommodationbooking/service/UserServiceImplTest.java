@@ -34,22 +34,16 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class UserServiceImplTest {
     private static final Long USER_ID = 1L;
     private static final User user = new User(USER_ID);
-
     @Mock
     private UserMapper userMapper;
-
     @Mock
     private UserRepository userRepository;
-
     @Mock
     private RoleRepository roleRepository;
-
     @Mock
     private PasswordEncoder passwordEncoder;
-
     @Mock
     private Authentication authentication;
-
     @InjectMocks
     private UserServiceImpl userService;
 
@@ -68,7 +62,6 @@ public class UserServiceImplTest {
         Role role = new Role();
         role.setId(2L);
         role.setName(RoleName.ROLE_ADMIN);
-
         UserResponseDto userDto = getUserResponse();
         UserRegistrationDto userRegistrationDto = getUserRegistration();
 
