@@ -25,10 +25,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-@Sql(scripts = {"classpath:database/insert-accommodation.sql"},
+@Sql(scripts = {"classpath:database/insert-accommodation.sql",
+        "classpath:database/insert-user.sql"},
         executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
-@Sql(scripts = {"classpath:database/delete-all.sql"},
-        executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @SqlMergeMode(SqlMergeMode.MergeMode.MERGE)
 public class BookingControllerTest {
@@ -47,7 +46,6 @@ public class BookingControllerTest {
     }
 
     @Test
-    @Sql(scripts = {"classpath:database/insert-user.sql"})
     @WithMockUser(username = "admin1", roles = "ADMIN")
     @DisplayName("Save valid BookingRequestDto and return BookingResponseDto")
     public void save_validBookingRequestDto_returnBookingResponseDto() throws Exception {
@@ -73,6 +71,7 @@ public class BookingControllerTest {
 
     @Test
     @WithMockUser(username = "admin1", roles = "ADMIN")
+    @Sql(scripts = "classpath:database/insert-booking.sql")
     @DisplayName("Find by ID and return BookingResponseDto")
     public void find_byId_returnBookingResponseDto() throws Exception {
         mockMvc.perform(get("/bookings/" + BOOKING_ID)
