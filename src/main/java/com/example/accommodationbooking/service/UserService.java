@@ -13,5 +13,5 @@ public interface UserService {
 
     UserResponseDto getUserInformation(Authentication authentication);
 
-    UserResponseDto addRole(Long id,Authentication authentication);
+    UserResponseDto addRole(Long id, Authentication authentication);
 }

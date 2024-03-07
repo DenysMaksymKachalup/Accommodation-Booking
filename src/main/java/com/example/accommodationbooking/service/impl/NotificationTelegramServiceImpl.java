@@ -100,5 +100,4 @@ public class NotificationTelegramServiceImpl implements NotificationTelegramServ
         telegramBotService.sendMessage(
                 String.format("Accommodation with ID %d has been deleted.", id));
     }
-
 }
