@@ -51,22 +51,16 @@ public class BookingServiceTest {
     private static final User user = new User(USER_ID);
     @Mock
     private BookingMapper bookingMapper;
-
     @Mock
     private BookingRepository bookingRepository;
-
     @Mock
     private NotificationTelegramService notificationTelegramService;
-
     @Mock
     private AccommodationService accommodationService;
-
     @InjectMocks
     private BookingServiceImpl bookingService;
-
     @Mock
     private Authentication authentication;
-
     @Mock
     private UserRepository userRepository;
 
@@ -90,7 +84,6 @@ public class BookingServiceTest {
                 1L,
                 "PENDING"
         );
-
         Booking booking = getBooking();
         BookingResponseDto bookingResponse = getBookingResponseDto();
 
@@ -161,11 +154,9 @@ public class BookingServiceTest {
                 1L,
                 "PENDING"
         );
-
         Booking booking = getBooking();
         Booking bookingForUpdate = getBooking();
         bookingForUpdate.setCheckOutDate(LocalDate.of(2024, 2, 20));
-
         BookingResponseDto bookingUpdateResponseDto = getBookingUpdateResponseDto();
 
         Mockito.when(bookingRepository.findAllByUserId(USER_ID)).thenReturn(List.of(booking));
@@ -203,7 +194,6 @@ public class BookingServiceTest {
     @DisplayName("Test updateStatus method with correct ID should return updated Booking")
     public void updateStatus_byId_returnBookingResponseDto() {
         Booking booking = getBooking();
-
         Booking bookingUpdateStatus = getBooking();
         bookingUpdateStatus.setBookingStatus(BookingStatus.CONFIRMED);
 

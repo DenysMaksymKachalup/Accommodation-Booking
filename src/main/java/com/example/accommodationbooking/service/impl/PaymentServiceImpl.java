@@ -55,7 +55,6 @@ public class PaymentServiceImpl implements PaymentService {
     private final BookingRepository bookingRepository;
     private final NotificationTelegramService notificationTelegramService;
     private final UserRepository userRepository;
-
     @Value("${stripe.secret.key}")
     private String stripe;
 

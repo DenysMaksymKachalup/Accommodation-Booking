@@ -36,27 +36,21 @@ import org.mockito.quality.Strictness;
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 public class PaymentServiceImplTest {
-
     private static final Long BOOKING_ID = 1L;
     private static final Long ACCOMMODATION_ID = 1L;
     private static final Long USER_ID = 1L;
     private static final Long PAYMENT_ID = 1L;
-
+    private static final String SESSION_ID = "sessionId";
     @Mock
     private PaymentRepository paymentRepository;
-
     @Mock
     private BookingRepository bookingRepository;
-
     @Mock
     private NotificationTelegramService notificationTelegramService;
-
     @Mock
     private PaymentMapper paymentMapper;
-
     @Mock
     private URL url;
-
     @InjectMocks
     private PaymentServiceImpl paymentService;
 
@@ -64,9 +58,7 @@ public class PaymentServiceImplTest {
     @DisplayName("Find All Payments by User ID")
     public void findAll_byUserId_returnPaymentResponseDtoList() {
         Long userId = 1L;
-
         Payment payment = getPayment();
-
         PaymentResponseDto paymentResponseDto
                 = new PaymentResponseDto("PAID", BOOKING_ID, url, "sessionID", BigDecimal.ONE);
 
@@ -74,10 +66,8 @@ public class PaymentServiceImplTest {
         when(paymentMapper.toDto(any()))
                 .thenReturn(paymentResponseDto);
 
-        // Act
         List<PaymentResponseDto> actualPaymentDtos = paymentService.findAllByUserId(userId);
 
-        // Assert
         assertEquals(paymentResponseDto, actualPaymentDtos.getFirst());
 
     }
@@ -91,17 +81,18 @@ public class PaymentServiceImplTest {
         Payment payment = new Payment();
         payment.setBooking(booking);
         payment.setPaymentStatus(PaymentStatus.PAID);
-        String sessionId = "sessionId";
-
         PaymentResponseWithoutUrlDto paymentResponseWithoutUrlDto =
-                new PaymentResponseWithoutUrlDto("PENDING", BOOKING_ID, sessionId, BigDecimal.ONE);
+                new PaymentResponseWithoutUrlDto(
+                        PaymentStatus.PENDING.name(),
+                        BOOKING_ID, SESSION_ID,
+                        BigDecimal.ONE);
 
         when(paymentMapper.toDtoWithoutUrl(payment)).thenReturn(paymentResponseWithoutUrlDto);
         when(paymentRepository.findBySessionId(anyString())).thenReturn(Optional.of(payment));
         when(bookingRepository.save(any(Booking.class))).thenReturn(new Booking());
         when(paymentRepository.save(any(Payment.class))).thenReturn(new Payment());
 
-        paymentService.handleSuccessfulPayment(sessionId);
+        paymentService.handleSuccessfulPayment(SESSION_ID);
 
         assertEquals(BookingStatus.EXPIRED, booking.getBookingStatus());
         assertEquals(PaymentStatus.PAID, payment.getPaymentStatus());
@@ -110,18 +101,16 @@ public class PaymentServiceImplTest {
     @Test
     @DisplayName("Handle Successful Payment with Invalid Session ID Should Throw PaymentException")
     void handleSuccessfulPayment_InvalidSessionId_ThrowsPaymentException() {
-        String invalidSessionId = "invalidSessionId";
-
         when(paymentRepository.findBySessionId(anyString()))
                 .thenReturn(Optional.empty());
         assertThrows(PaymentException.class, () ->
-                paymentService.handleSuccessfulPayment(invalidSessionId));
+                paymentService.handleSuccessfulPayment(SESSION_ID));
     }
 
     private Payment getPayment() {
         Payment payment = new Payment();
         payment.setId(PAYMENT_ID);
-        payment.setSessionId("sessionID");
+        payment.setSessionId(SESSION_ID);
         payment.setAmountToPay(BigDecimal.ONE);
         payment.setSessionUrl("URL");
         payment.setBooking(getBooking());

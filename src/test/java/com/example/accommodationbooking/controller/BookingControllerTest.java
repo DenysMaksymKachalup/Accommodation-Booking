@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.accommodationbooking.dto.booking.BookingRequestDto;
+import com.example.accommodationbooking.model.enumeration.BookingStatus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeAll;
@@ -31,9 +32,8 @@ import org.springframework.web.context.WebApplicationContext;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @SqlMergeMode(SqlMergeMode.MergeMode.MERGE)
 public class BookingControllerTest {
-    protected static MockMvc mockMvc;
+    private static MockMvc mockMvc;
     private static final String BOOKING_ID = "1";
-
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -53,7 +53,7 @@ public class BookingControllerTest {
                 LocalDate.of(2024, 2, 1),
                 LocalDate.of(2024, 2, 20),
                 1L,
-                "PENDING"
+                BookingStatus.PENDING.name()
         );
 
         String jsonRequest = objectMapper.writeValueAsString(bookingRequestDto);
@@ -66,7 +66,6 @@ public class BookingControllerTest {
                 .andExpect(jsonPath("$.checkOutDate", is("2024-02-20")))
                 .andExpect(jsonPath("$.accommodationId", is(1)))
                 .andExpect(jsonPath("$.bookingStatus", is("PENDING")));
-
     }
 
     @Test
@@ -92,7 +91,7 @@ public class BookingControllerTest {
                 LocalDate.of(2024, 2, 10),
                 LocalDate.of(2024, 2, 21),
                 1L,
-                "PENDING"
+                BookingStatus.PENDING.name()
         );
 
         String jsonRequest = objectMapper.writeValueAsString(bookingRequestDto);
@@ -105,7 +104,6 @@ public class BookingControllerTest {
                 .andExpect(jsonPath("$.checkOutDate", is("2024-02-21")))
                 .andExpect(jsonPath("$.accommodationId", is(1)))
                 .andExpect(jsonPath("$.bookingStatus", is("PENDING")));
-
     }
 
     @Test

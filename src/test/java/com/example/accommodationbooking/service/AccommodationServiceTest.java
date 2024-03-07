@@ -33,13 +33,10 @@ public class AccommodationServiceTest {
     private static final Long ACCOMMODATION_ID = 1L;
     @Mock
     private AccommodationRepository accommodationRepository;
-
     @Mock
     private AccommodationMapper accommodationMapper;
-
     @Mock
     private NotificationTelegramService notificationTelegramService;
-
     @InjectMocks
     private AccommodationServiceImpl accommodationService;
 
@@ -57,7 +54,6 @@ public class AccommodationServiceTest {
                         BigDecimal.ONE,
                         1
                 );
-
         Accommodation accommodation = getAccommodation();
         AccommodationResponseDto accommodationResponseDto = getAccommodationResponseDto();
 
@@ -105,7 +101,6 @@ public class AccommodationServiceTest {
         AccommodationResponseDto actual = accommodationService.findById(ACCOMMODATION_ID);
 
         assertEquals(accommodationResponseDto, actual);
-
     }
 
     @Test
@@ -120,10 +115,8 @@ public class AccommodationServiceTest {
     @Test
     @DisplayName("Test updateById method with correct ID should return updated AccommodationDto")
     public void update_byCorrectId_returnAccommodationDto() {
-
         Accommodation accommodation = getAccommodation();
         AccommodationResponseDto accommodationResponseDto = getAccommodationResponseDto();
-
         Accommodation accommodationForUpdating = getAccommodation();
         accommodationForUpdating.setAvailability(5);
         AddressDto addressDto = new AddressDto("street", "city");
@@ -177,7 +170,6 @@ public class AccommodationServiceTest {
         accommodation.setAddress(address);
         accommodation.setAmenities(List.of("amenities"));
         accommodation.setDailyRate(BigDecimal.ONE);
-
         return accommodation;
     }
 

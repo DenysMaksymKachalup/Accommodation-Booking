@@ -10,6 +10,7 @@ import com.example.accommodationbooking.dto.user.UserLoginRequestDto;
 import com.example.accommodationbooking.dto.user.UserRegistrationDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,7 +24,6 @@ import org.springframework.web.context.WebApplicationContext;
 @SqlMergeMode(SqlMergeMode.MergeMode.MERGE)
 public class AuthenticationControllerTest {
     protected static MockMvc mockMvc;
-
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -36,6 +36,7 @@ public class AuthenticationControllerTest {
     }
 
     @Test
+    @DisplayName("User registration: Valid UserRegistrationDto should return UserLoginResponseDto")
     public void registration_validUserRegistrationDto_returnUserLoginResponseDto()
             throws Exception {
         UserRegistrationDto userRegistrationDto =
@@ -57,6 +58,7 @@ public class AuthenticationControllerTest {
     }
 
     @Test
+    @DisplayName("User login: Valid UserLoginRequestDto should return String token")
     public void login_validUserLoginRequestDto_returnStringToken() throws Exception {
         UserLoginRequestDto userRegistrationDto =
                 new UserLoginRequestDto(
@@ -70,5 +72,4 @@ public class AuthenticationControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").isString());
     }
-
 }

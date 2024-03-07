@@ -22,7 +22,6 @@ import org.springframework.test.context.jdbc.Sql;
         executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 public class BookingRepositoryTest {
     private static final Long USER_ID = 1L;
-
     @Autowired
     private BookingRepository bookingRepository;
 
